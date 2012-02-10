@@ -52,744 +52,573 @@ file for every revision listed below for the following reasons:
   changesets are not provided as patches. They are instead presented as intact files under the
   `liquibase-changesets/` directory.
 
-[Here](patch_log.txt) is a printout of `svn log -v` for each revision.
+[Here](uakatt/Banking-Information-from-External-Sources/blob/master/patch_log.txt) is a printout of `svn log -v` for each revision.
 
 <table>
   <tr>
-    <th>Jira</th><th>Revision #</th><th>Date</th><th>User</th><th>Message / Paths</th>
-  </tr>
-  <tr>
     <td>KITT-665</td>
-    <td>#9840</td>
-    <td>Thu May 13 00:39:27 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check-in.<br /><br />
+    <td>#9840 was committed on Thu May 13 00:39:27 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check-in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ LoadAchBankStep.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/ AchBankService.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ AchBankServiceImpl.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/ PayeeAchAccountService.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ PayeeAchAccountServiceImpl.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ LoadAchPayeeBankAcctStep.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/AchBankService.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9841</td>
-    <td>Thu May 13 00:42:14 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding beans for pdpLoadBankDataJob.<br /><br />
+    <td>#9841 was committed on Thu May 13 00:42:14 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding beans for pdpLoadBankDataJob.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9842</td>
-    <td>Thu May 13 00:42:39 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding constants.<br /><br />
+    <td>#9842 was committed on Thu May 13 00:42:39 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding constants.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/ KFSKeyConstants.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9843</td>
-    <td>Thu May 13 00:43:44 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding exception to remove functionality.<br /><br />
+    <td>#9843 was committed on Thu May 13 00:43:44 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding exception to remove functionality.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/org/kuali/kfs/pdp/batch/ LoadFederalReserveBankDataStep.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9894</td>
-    <td>Sat May 15 00:34:38 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Code changes.<br /><br />
+    <td>#9894 was committed on Sat May 15 00:34:38 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Code changes.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchReportsStep.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ AchBankServiceImpl.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ PayeeAchAccountServiceImpl.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ LoadAchPayeeBankAcctStep.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchReportsStep.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9895</td>
-    <td>Sat May 15 00:36:46 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding ACHFileConstants.<br /><br />
+    <td>#9895 was committed on Sat May 15 00:36:46 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding ACHFileConstants.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9912</td>
-    <td>Mon May 17 07:51:34 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Modifying ACHFileConstants<br /><br />
+    <td>#9912 was committed on Mon May 17 07:51:34 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Modifying ACHFileConstants</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9913</td>
-    <td>Mon May 17 08:42:39 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Code changes.<br /><br />
+    <td>#9913 was committed on Mon May 17 08:42:39 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Code changes.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9914</td>
-    <td>Mon May 17 08:43:01 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding ACHFileConstants.<br /><br />
+    <td>#9914 was committed on Mon May 17 08:43:01 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding ACHFileConstants.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9942</td>
-    <td>Tue May 18 01:45:36 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check-in.<br /><br />
+    <td>#9942 was committed on Tue May 18 01:45:36 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check-in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/ achBanks</li>
-<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/ achPayeeBankAccounts</li>
+<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achBanks</li>
+<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achPayeeBankAccounts</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9943</td>
-    <td>Tue May 18 01:46:35 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check-in.<br /><br />
+    <td>#9943 was committed on Tue May 18 01:46:35 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check-in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/ PayeeACHAccount.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/PayeeACHAccount.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9944</td>
-    <td>Tue May 18 01:47:25 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Added implements declaration to fix server startup error.<br /><br />
+    <td>#9944 was committed on Tue May 18 01:47:25 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Added implements declaration to fix server startup error.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ PayeeAchAccountServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9945</td>
-    <td>Tue May 18 01:48:01 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Uncommented functionality.<br /><br />
+    <td>#9945 was committed on Tue May 18 01:48:01 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Uncommented functionality.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ LoadAchPayeeBankAcctStep.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9946</td>
-    <td>Tue May 18 01:48:14 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Code changes.<br /><br />
+    <td>#9946 was committed on Tue May 18 01:48:14 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Code changes.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9963</td>
-    <td>Tue May 18 20:39:05 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Removing class; moved it to PayeeACHAcctFlatFileConverter instead.<br /><br />
+    <td>#9963 was committed on Tue May 18 20:39:05 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Removing class; moved it to PayeeACHAcctFlatFileConverter instead.</blockquote><br />
       <ul>
-<li>D /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/ PayeeACHAccount.java</li>
+<li>D /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/PayeeACHAccount.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9976</td>
-    <td>Wed May 19 22:39:28 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check-in.<br /><br />
+    <td>#9976 was committed on Wed May 19 22:39:28 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check-in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/ achBanks</li>
-<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/ achPayeeBankAccounts</li>
+<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achBanks</li>
+<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achPayeeBankAccounts</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9979</td>
-    <td>Thu May 20 00:45:18 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Code changes.<br /><br />
+    <td>#9979 was committed on Thu May 20 00:45:18 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Code changes.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9997</td>
-    <td>Thu May 20 00:46:04 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding Transactional annotation.<br /><br />
+    <td>#9997 was committed on Thu May 20 00:46:04 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding Transactional annotation.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ AchBankServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#9998</td>
-    <td>Thu May 20 00:46:21 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Code changes.<br /><br />
+    <td>#9998 was committed on Thu May 20 00:46:21 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Code changes.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10056</td>
-    <td>Sat May 22 01:32:07 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Code changes.<br /><br />
+    <td>#10056 was committed on Sat May 22 01:32:07 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Code changes.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10057</td>
-    <td>Sat May 22 01:33:31 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding property for originationCodeDao.<br /><br />
+    <td>#10057 was committed on Sat May 22 01:33:31 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding property for originationCodeDao.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10058</td>
-    <td>Sat May 22 01:33:54 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Adding more constants.<br /><br />
+    <td>#10058 was committed on Sat May 22 01:33:54 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Adding more constants.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10060</td>
-    <td>Mon May 24 18:09:31 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Removing subfolders.<br /><br />
+    <td>#10060 was committed on Mon May 24 18:09:31 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Removing subfolders.</blockquote><br />
       <ul>
-<li>D /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/ achBanks</li>
-<li>D /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/ achPayeeBankAccounts</li>
+<li>D /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achBanks</li>
+<li>D /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achPayeeBankAccounts</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10079</td>
-    <td>Tue May 25 01:32:48 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Cleaned up code.<br /><br />
+    <td>#10079 was committed on Tue May 25 01:32:48 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Cleaned up code.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ LoadAchBankStep.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ LoadAchPayeeBankAcctStep.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10080</td>
-    <td>Tue May 25 01:33:17 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Minor reporting code changes.<br /><br />
+    <td>#10080 was committed on Tue May 25 01:33:17 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Minor reporting code changes.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10081</td>
-    <td>Tue May 25 01:33:52 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Cleaned up code.<br /><br />
+    <td>#10081 was committed on Tue May 25 01:33:52 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Cleaned up code.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ AchBankServiceImpl.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ PayeeAchAccountServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10082</td>
-    <td>Tue May 25 01:34:12 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Split batch job into two.<br /><br />
+    <td>#10082 was committed on Tue May 25 01:34:12 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Split batch job into two.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10083</td>
-    <td>Tue May 25 01:34:30 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check in.<br /><br />
+    <td>#10083 was committed on Tue May 25 01:34:30 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/util/ PayeeACHAcctFlatFileConverter.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ util</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/util</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10110</td>
-    <td>Thu May 27 00:45:22 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check in.<br /><br />
+    <td>#10110 was committed on Thu May 27 00:45:22 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/ util</li>
-<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/util/ PayeeACHAcctFlatFileConverterTest.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/util</li>
+<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10127</td>
-    <td>Thu May 27 00:48:54 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check in.<br /><br />
+    <td>#10127 was committed on Thu May 27 00:48:54 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileTypeTest.java</li>
-<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/ batch</li>
+<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10157</td>
-    <td>Thu May 27 21:13:54 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Added more test methods.<br /><br />
+    <td>#10157 was committed on Thu May 27 21:13:54 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Added more test methods.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10160</td>
-    <td>Thu May 27 21:32:31 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Removed extraneous set up method.<br /><br />
+    <td>#10160 was committed on Thu May 27 21:32:31 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Removed extraneous set up method.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10179</td>
-    <td>Fri May 28 00:34:05 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check in.<br /><br />
+    <td>#10179 was committed on Fri May 28 00:34:05 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10272</td>
-    <td>Wed Jun 02 00:47:59 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Added more test methods.<br /><br />
+    <td>#10272 was committed on Wed Jun 02 00:47:59 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Added more test methods.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10274</td>
-    <td>Wed Jun 02 21:05:10 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 More coding.<br /><br />
+    <td>#10274 was committed on Wed Jun 02 21:05:10 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 More coding.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10275</td>
-    <td>Wed Jun 02 21:06:00 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Cleaning up code.<br /><br />
+    <td>#10275 was committed on Wed Jun 02 21:06:00 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Cleaning up code.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ LoadAchBankStep.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10276</td>
-    <td>Wed Jun 02 21:07:07 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Removing out-dated code.<br /><br />
+    <td>#10276 was committed on Wed Jun 02 21:07:07 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Removing out-dated code.</blockquote><br />
       <ul>
-<li>D /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchReportsStep.java</li>
+<li>D /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchReportsStep.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10299</td>
-    <td>Thu Jun 03 21:49:17 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Merging with branch.<br /><br />
+    <td>#10299 was committed on Thu Jun 03 21:49:17 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Merging with branch.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/ achBanks</li>
-<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/achBanks/ placeholder.txt</li>
-<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/ achPayeeBankAccounts</li>
-<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/achPayeeBankAccounts/ placeholder.txt</li>
+<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/achBanks</li>
+<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/achBanks/placeholder.txt</li>
+<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/achPayeeBankAccounts</li>
+<li>A /financial-system/kfs/trunk/build/external/work/staging/pdp/achPayeeBankAccounts/placeholder.txt</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10300</td>
-    <td>Thu Jun 03 21:52:20 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Initial check in.<br /><br />
+    <td>#10300 was committed on Thu Jun 03 21:52:20 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Initial check in.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achBanks/ placeholder.txt</li>
-<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achPayeeBankAccounts/ placeholder.txt</li>
+<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achBanks/placeholder.txt</li>
+<li>A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achPayeeBankAccounts/placeholder.txt</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10301</td>
-    <td>Thu Jun 03 21:55:14 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Merging branch changes.<br /><br />
+    <td>#10301 was committed on Thu Jun 03 21:55:14 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Merging branch changes.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/ PayeeACHAcctFlatFileConverter.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/ AchBankService.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/ AchBankServiceImpl.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/ PayeeAchAccountService.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/ util</li>
-<li>M /financial-system/kfs/trunk/work/src/org/kuali/kfs/pdp/batch/ LoadFederalReserveBankDataStep.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/ PayeeAchAccountServiceImpl.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ LoadAchPayeeBankAcctStep.java</li>
-<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ LoadAchBankStep.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/ KFSKeyConstants.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util</li>
+<li>M /financial-system/kfs/trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java</li>
+<li>A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10302</td>
-    <td>Thu Jun 03 21:58:12 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Merging branch changes.<br /><br />
+    <td>#10302 was committed on Thu Jun 03 21:58:12 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Merging branch changes.</blockquote><br />
       <ul>
-<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
-<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileTypeTest.java</li>
-<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/ util</li>
-<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/ batch</li>
-<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/util/ PayeeACHAcctFlatFileConverterTest.java</li>
+<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java</li>
+<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/util</li>
+<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch</li>
+<li>A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10420</td>
-    <td>Fri Jun 11 00:06:00 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Minor changes after code review.<br /><br />
+    <td>#10420 was committed on Fri Jun 11 00:06:00 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Minor changes after code review.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ AchBankServiceImpl.java</li>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/ PayeeAchAccountServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10423</td>
-    <td>Fri Jun 11 00:32:38 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Cleaning up code.<br /><br />
+    <td>#10423 was committed on Fri Jun 11 00:32:38 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Cleaning up code.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-665</td>
-    <td>#10442</td>
-    <td>Fri Jun 11 16:14:52 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-665 Merging code after code review.<br /><br />
+    <td>#10442 was committed on Fri Jun 11 16:14:52 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-665 Merging code after code review.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/ AchBankServiceImpl.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/ PayeeAchAccountServiceImpl.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#10965</td>
-    <td>Thu Jul 08 00:43:57 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Adding new ACH constants.<br /><br />
+    <td>#10965 was committed on Thu Jul 08 00:43:57 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Adding new ACH constants.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#10966</td>
-    <td>Thu Jul 08 00:45:22 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Using new ACH constants.<br /><br />
+    <td>#10966 was committed on Thu Jul 08 00:45:22 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Using new ACH constants.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#10971</td>
-    <td>Thu Jul 08 00:47:03 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Adding code for new business rules.<br /><br />
+    <td>#10971 was committed on Thu Jul 08 00:47:03 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Adding code for new business rules.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#11086</td>
-    <td>Tue Jul 13 02:34:08 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Coding changes because of junit test and another testing.<br /><br />
+    <td>#11086 was committed on Tue Jul 13 02:34:08 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Coding changes because of junit test and another testing.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#11087</td>
-    <td>Tue Jul 13 02:34:30 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Added more tests.<br /><br />
+    <td>#11087 was committed on Tue Jul 13 02:34:30 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Added more tests.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#11091</td>
-    <td>Tue Jul 13 17:29:54 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Added more services to inject.<br /><br />
+    <td>#11091 was committed on Tue Jul 13 17:29:54 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Added more services to inject.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#11092</td>
-    <td>Tue Jul 13 17:34:55 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Added more constants.<br /><br />
+    <td>#11092 was committed on Tue Jul 13 17:34:55 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Added more constants.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#11097</td>
-    <td>Wed Jul 14 00:18:59 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Made changes after code review.<br /><br />
+    <td>#11097 was committed on Wed Jul 14 00:18:59 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Made changes after code review.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#11130</td>
-    <td>Wed Jul 14 18:20:35 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Merging code changes.<br /><br />
+    <td>#11130 was committed on Wed Jul 14 18:20:35 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Merging code changes.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchBankInputFileType.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#12268</td>
-    <td>Sat Aug 21 00:32:09 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Changes after functional testing.<br /><br />
+    <td>#12268 was committed on Sat Aug 21 00:32:09 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Changes after functional testing.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/ AZKFSConstants.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/ spring-pdp.xml</li>
+<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#12269</td>
-    <td>Sat Aug 21 00:35:19 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Cleaning up code.<br /><br />
+    <td>#12269 was committed on Sat Aug 21 00:35:19 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Cleaning up code.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>KITT-1202</td>
-    <td>#12399</td>
-    <td>Wed Aug 25 17:35:39 UTC 2010</td>
-    <td>hlo</td>
-    <td>
-      KITT-1202 Changing equals to equalsIgnoreCase.<br /><br />
+    <td>#12399 was committed on Wed Aug 25 17:35:39 UTC 2010 by <strong>hlo</strong>.<br /><br />
+      <blockquote>KITT-1202 Changing equals to equalsIgnoreCase.</blockquote><br />
       <ul>
-<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileTypeTest.java</li>
-<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/ AchPayeeBankAcctInputFileType.java</li>
+<li>M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java</li>
+<li>M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java</li>
       </ul>
     </td>
   </tr>

@@ -1,7 +1,7 @@
-Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+Index: test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
 ===================================================================
---- trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12398)
-+++ trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12399)
+--- test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12398)
++++ test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12399)
 @@ -323,19 +323,19 @@
              fail("Payee name not updated and it should have been.");
          }
@@ -35,10 +35,10 @@ Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTy
              fail("Bank account type code not updated and it should have been.");
          }
          
-Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+Index: work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12398)
-+++ trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12399)
+--- work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12398)
++++ work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12399)
 @@ -265,10 +265,10 @@
                  savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
                  if (savePayeeAcct) {

@@ -1,7 +1,7 @@
-Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+Index: test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
 ===================================================================
---- trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12267)
-+++ trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12268)
+--- test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12267)
++++ test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12268)
 @@ -25,6 +25,7 @@
  import org.kuali.kfs.sys.context.KualiTestBase;
  import org.kuali.kfs.sys.context.SpringContext;
@@ -56,10 +56,10 @@ Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTy
              return people;
          }
  
-Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+Index: work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12267)
-+++ trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12268)
+--- work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12267)
++++ work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12268)
 @@ -179,6 +179,7 @@
       *  associated payee, insert a row with the information in XML.
       * 8a. If no payee name is provided, reject record.
@@ -117,10 +117,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.ja
          }
                  
          return validAcct;
-Index: trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+Index: work/src/edu/arizona/kfs/pdp/spring-pdp.xml
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 12267)
-+++ trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 12268)
+--- work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 12267)
++++ work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 12268)
 @@ -270,7 +270,7 @@
  	       <value>${reports.directory}/pdp</value>
  	    </property>
@@ -130,10 +130,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
  	    </property>
  	    <property name="reportExtension">
  	       <value>txt</value>
-Index: trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+Index: work/src/edu/arizona/kfs/sys/AZKFSConstants.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 12267)
-+++ trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 12268)
+--- work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 12267)
++++ work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 12268)
 @@ -80,7 +80,7 @@
          public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided - record not loaded";
          public static final String ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR = "Invalid payee ID type";

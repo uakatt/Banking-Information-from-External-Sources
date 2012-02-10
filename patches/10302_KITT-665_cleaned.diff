@@ -1,7 +1,7 @@
-Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+Index: test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
 ===================================================================
---- trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 0)
-+++ trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 10302)
+--- test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 0)
++++ test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 10302)
 @@ -0,0 +1,306 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -309,10 +309,10 @@ Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTy
 +        }        
 +    }
 +}
-Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
+Index: test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
 ===================================================================
---- trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 0)
-+++ trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 10302)
+--- test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 0)
++++ test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 10302)
 @@ -0,0 +1,239 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -553,10 +553,10 @@ Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.ja
 +        assertEquals("Data view code not provided and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_DATA_VIEW_CD);
 +    }
 +}
-Index: trunk/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java
+Index: test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java
 ===================================================================
---- trunk/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java	(revision 0)
-+++ trunk/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java	(revision 10302)
+--- test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java	(revision 0)
++++ test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java	(revision 10302)
 @@ -0,0 +1,95 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.

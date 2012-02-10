@@ -1,7 +1,7 @@
-Index: trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java
+Index: work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java
 ===================================================================
---- trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 10300)
-+++ trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 10301)
+--- work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 10300)
++++ work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 10301)
 @@ -34,9 +34,13 @@
      public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
          LOG.debug("execute() started");
@@ -18,10 +18,10 @@ Index: trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.jav
      }
  
      public void setAchBankService(AchBankService achBankService) {
-Index: trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+Index: work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 10301)
 @@ -0,0 +1,87 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -110,10 +110,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImp
 +        this.achPayeeBankAcctInputFileType = achPayeeBankAcctInputFileType;
 +    }
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+Index: work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 10301)
 @@ -0,0 +1,90 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -205,10 +205,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
 +        this.achBankInputFileType = achBankInputFileType;
 +    }
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java
+Index: work/src/edu/arizona/kfs/pdp/service/AchBankService.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/service/AchBankService.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/service/AchBankService.java	(revision 10301)
 @@ -0,0 +1,22 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -232,10 +232,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java
 +    boolean loadAchBankFile(String inputFileName);
 +
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java
+Index: work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java	(revision 10301)
 @@ -0,0 +1,21 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -258,10 +258,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java
 +    
 +    boolean loadAchPayeeAccountFile(String inputFileName);
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+Index: work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 10301)
 @@ -0,0 +1,185 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -448,10 +448,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
 +
 +
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+Index: work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 10301)
 @@ -0,0 +1,178 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -631,10 +631,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
 +        this.dateTimeService = dateTimeService;
 +    }
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+Index: work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10301)
 @@ -0,0 +1,655 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -1291,10 +1291,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.ja
 +        this.reportExtension = reportExtension;
 +    }
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+Index: work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10301)
 @@ -0,0 +1,511 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -1807,10 +1807,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
 +        this.reportPrefix = reportPrefix;
 +    }
 +}
-Index: trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+Index: work/src/edu/arizona/kfs/pdp/spring-pdp.xml
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10300)
-+++ trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10300)
++++ work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10301)
 @@ -47,6 +47,8 @@
   		<property name="jobNames">
  			<list merge="true">
@@ -1984,10 +1984,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
  	
  	<bean id="shippingInvoiceDao" parent="platformAwareDao" class="edu.arizona.kfs.pdp.dataaccess.impl.ShippingInvoiceDaoOjb" />		
  </beans>
-Index: trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java
+Index: work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java	(revision 0)
-+++ trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java	(revision 10301)
+--- work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java	(revision 0)
++++ work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java	(revision 10301)
 @@ -0,0 +1,77 @@
 +/*
 + * Copyright 2010 The Kuali Foundation.
@@ -2066,10 +2066,10 @@ Index: trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.jav
 +    	return field;
 +    }
 +}
-Index: trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
+Index: work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 10300)
-+++ trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 10301)
+--- work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 10300)
++++ work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 10301)
 @@ -41,4 +41,8 @@
      
      // Shipping Account
@@ -2079,10 +2079,10 @@ Index: trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
 +    public static final String MESSAGE_BATCH_UPLOAD_TITLE_ACH_BANK = "message.batchUpload.title.achBank";
 +    public static final String MESSAGE_BATCH_UPLOAD_TITLE_ACH_PAYEE = "message.batchUpload.title.achPayee";
  }
-Index: trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+Index: work/src/edu/arizona/kfs/sys/AZKFSConstants.java
 ===================================================================
---- trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10300)
-+++ trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10301)
+--- work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10300)
++++ work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10301)
 @@ -51,4 +51,35 @@
          public static final String SHIP_FILE_TYPE_IDENTIFIER = "shippingInputFileType";
          public static final String SHIPPING_FILE_NAME = "extract_for_shipping";
