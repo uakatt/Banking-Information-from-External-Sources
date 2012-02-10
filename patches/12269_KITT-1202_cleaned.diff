@@ -1,0 +1,13 @@
+Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+===================================================================
+--- trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12268)
++++ trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12269)
+@@ -403,8 +403,6 @@
+             PersonImpl fakePerson = new PersonImpl(matchingPrincipal, "E");
+             fakePerson.setName("KIM NAME");
+             people.add(fakePerson);
+-//            people.add(new PersonImpl("hlo", "E"));
+-//            people.add(new PersonImpl(matchingPrincipal, "E"));
+             return people;
+         }
+ 

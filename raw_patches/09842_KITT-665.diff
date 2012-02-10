@@ -1,0 +1,26 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 9841)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 9842)
+@@ -41,4 +41,8 @@
+     
+     // Shipping Account
+     public static final String MESSAGE_BATCH_UPLOAD_TITLE_SHIP = "message.batchUpload.title.shipping";
++    
++    // ACH Banking
++    public static final String MESSAGE_BATCH_UPLOAD_TITLE_ACH_BANK = "message.batchUpload.title.achBank";
++    public static final String MESSAGE_BATCH_UPLOAD_TITLE_ACH_PAYEE = "message.batchUpload.title.achPayee";
+ }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 9841)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 9842)
+@@ -35,6 +35,8 @@
+     public static final String DEFAULT_NUMBER_OF_FISCAL_PERIODS_ERROR_CERTIFICATION_TAB_REQUIRED = "DEFAULT_NUMBER_OF_FISCAL_PERIODS_ERROR_CERTIFICATION_TAB_REQUIRED";
+     public static final String BI_REPORT_URL = "BI_REPORT_URL"; // KITT-513
+     public static final String PCDH_FILE_TYPE_IDENTIFIER = "procurementCardHolderInputFileType";
++    public static final String ACH_BANK_FILE_TYPE_IDENTIFIER = "achBankInputFileType";    // KITT-665
++    public static final String ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER = "achPayeeBankAcctInputFileType";    // KITT-665
+         
+     //KevinMcO Docuware KITT-414 Constants
+     public static final String VIEW_DOCUWARE = "viewImages"; //for KITT-414

@@ -1,0 +1,368 @@
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 10441)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 10442)
+@@ -21,6 +21,7 @@
+ import java.util.Collection;
+ 
+ import org.apache.commons.io.IOUtils;
++import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
+ import org.kuali.kfs.sys.batch.BatchInputFileType;
+ import org.kuali.kfs.sys.batch.service.BatchInputFileService;
+ import org.kuali.kfs.sys.exception.ParseException;
+@@ -47,10 +48,10 @@
+             throw new RuntimeException("Cannot find the file requested to be parsed " + inputFileName + " " + e1.getMessage(), e1);
+         }
+         
+-        Collection payeeAccts = null;
++        Collection<PayeeACHAccount> payeeAccts = null;
+         try {
+             byte[] fileByteContent = IOUtils.toByteArray(fileContents);
+-            payeeAccts = (Collection) batchInputFileService.parse(achPayeeBankAcctInputFileType, fileByteContent);
++            payeeAccts = (Collection<PayeeACHAccount>) batchInputFileService.parse(achPayeeBankAcctInputFileType, fileByteContent);
+         }
+         catch (IOException e) {
+             LOG.error("error while getting file bytes:  " + e.getMessage(), e);
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 10441)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 10442)
+@@ -19,10 +19,9 @@
+ import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.util.Collection;
+-import java.util.List;
+ 
+ import org.apache.commons.io.IOUtils;
+-import org.kuali.kfs.fp.batch.service.impl.ProcurementCardLoadTransactionsServiceImpl;
++import org.kuali.kfs.pdp.businessobject.ACHBank;
+ import org.kuali.kfs.sys.batch.BatchInputFileType;
+ import org.kuali.kfs.sys.batch.service.BatchInputFileService;
+ import org.kuali.kfs.sys.exception.ParseException;
+@@ -50,10 +49,10 @@
+             throw new RuntimeException("Cannot find the file requested to be parsed " + inputFileName + " " + e1.getMessage(), e1);
+         }
+         
+-        Collection banks = null;
++        Collection<ACHBank> banks = null;
+         try {
+             byte[] fileByteContent = IOUtils.toByteArray(fileContents);
+-            banks = (Collection) batchInputFileService.parse(achBankInputFileType, fileByteContent);
++            banks = (Collection<ACHBank>) batchInputFileService.parse(achBankInputFileType, fileByteContent);
+         }
+         catch (IOException e) {
+             LOG.error("error while getting file bytes:  " + e.getMessage(), e);
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10441)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10442)
+@@ -182,7 +182,7 @@
+                 LOG.info("Payee line: " + fileLine);
+                 
+                 // get a valid systemSource from the file
+-                if (systemSource == null || systemSource.equals("")) {
++                if (StringUtils.isBlank(systemSource)) {
+                     systemSource = fileLine.substring(478, 480).trim();
+                 }
+                 
+@@ -211,11 +211,11 @@
+             reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING);
+             reportLines.add(reportLine);
+         }
+-        else if (currentPayeeAcct.getPayeeIdNumber() == null || currentPayeeAcct.getPayeeIdNumber().equals("")) {
++        else if (StringUtils.isBlank(currentPayeeAcct.getPayeeIdNumber())) {
+             reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR);
+             reportLines.add(reportLine);
+         }
+-        else if (currentPayeeAcct.getPayeeEmailAddress() == null || currentPayeeAcct.getPayeeEmailAddress().equals("")) {
++        else if (StringUtils.isBlank(currentPayeeAcct.getPayeeEmailAddress())) {
+             reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
+             reportLines.add(reportLine);
+         }
+@@ -224,11 +224,11 @@
+             if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
+                 savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+                 if (savePayeeAcct) {
+-                    // change message based on type
+-                    if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                    // change message based on type                    
++                    if ("T".equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
+                     }
+-                    else if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                    else if ("E".equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -246,10 +246,10 @@
+                 
+                 if (validChanges) {                            
+                     // change message based on type
+-                    if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                    if ("T".equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
+                     }
+-                    else if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                    else if ("E".equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -351,25 +351,25 @@
+         
+         if (validAcct) {    // update existingPayeeAcct appropriately
+             // check routing number
+-            if (newBankRoutingNumber != null && !newBankRoutingNumber.equals(oldBankRoutingNumber)) {
++            if (StringUtils.isNotBlank(newBankRoutingNumber) && !newBankRoutingNumber.equals(oldBankRoutingNumber)) {
+                 existingPayeeAcct.setBankRoutingNumber(newBankRoutingNumber);
+                 changesMade = true;
+             }
+ 
+             // check bank account number
+-            if (newBankAccountNumber != null && !newBankAccountNumber.equals(oldBankAccountNumber)) {
++            if (StringUtils.isNotBlank(newBankAccountNumber) && !newBankAccountNumber.equals(oldBankAccountNumber)) {
+                 existingPayeeAcct.setBankAccountNumber(newBankAccountNumber);
+                 changesMade = true;
+             }
+             
+             // check payee name
+-            if (newPayeeName != null && !newPayeeName.equals(oldPayeeName)) {
++            if (StringUtils.isNotBlank(newPayeeName) && !newPayeeName.equals(oldPayeeName)) {
+                 existingPayeeAcct.setPayeeName(newPayeeName);
+                 changesMade = true;
+             }
+             
+             // check payee email address
+-            if (newPayeeEmailAddr != null && !newPayeeEmailAddr.equals(oldPayeeEmailAddr)) {
++            if (StringUtils.isNotBlank(newPayeeEmailAddr) && !newPayeeEmailAddr.equals(oldPayeeEmailAddr)) {
+                 existingPayeeAcct.setPayeeEmailAddress(newPayeeEmailAddr);
+                 changesMade = true;
+             }
+@@ -381,7 +381,7 @@
+             }
+             
+             // check ACH transaction type
+-            if (oldAchTransactionType == null || oldAchTransactionType.equals("") || !newAchTransactionType.equals(oldAchTransactionType)) {
++            if (StringUtils.isBlank(oldAchTransactionType) || !newAchTransactionType.equals(oldAchTransactionType)) {
+                 existingPayeeAcct.setAchTransactionType(newAchTransactionType);
+                 changesMade = true;
+             }
+@@ -423,36 +423,36 @@
+         String bankAcctTypeCode = payeeAcct.getBankAccountTypeCode();        
+         
+         // check routing number
+-        if (bankRoutingNumber == null || bankRoutingNumber.equals("")) {
++        if (StringUtils.isBlank(bankRoutingNumber)) {
+             reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR);
+             reportLines.add(reportLine);
+         }
+         
+         // check bank account number
+-        if (bankAcctNumber == null || bankAcctNumber.equals("")) {
++        if (StringUtils.isBlank(bankAcctNumber)) {
+             reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR);
+             reportLines.add(reportLine);
+         }
+         
+         // check payee name
+-        if (payeeName == null || payeeName.equals("")) {
++        if (StringUtils.isBlank(payeeName)) {
+             reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR);
+             reportLines.add(reportLine);
+         }
+                 
+         // check payee id type code
+-        if (payeeIdTypeCode == null || payeeIdTypeCode.equals("") || !validPayeeIDTypeCodes.contains(payeeIdTypeCode)) {
++        if (StringUtils.isBlank(payeeIdTypeCode) || !validPayeeIDTypeCodes.contains(payeeIdTypeCode)) {
+             reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR);
+             reportLines.add(reportLine);
+         }
+         
+         // check ACH transaction type
+-        if (achTransactionType == null || achTransactionType.equals("")) {
++        if (StringUtils.isBlank(achTransactionType)) {
+             payeeAcct.setAchTransactionType("ACH");
+         }
+         
+         //  check bank acct type
+-        if (bankAcctTypeCode == null || bankAcctTypeCode.equals("")) {
++        if (StringUtils.isBlank(bankAcctTypeCode)) {
+             reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR);
+             reportLines.add(reportLine);
+             validAcct = false;
+@@ -473,7 +473,7 @@
+      */
+     protected void writeReport(List<PayeeReportLine> lines, String systemSource) {
+         File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
+-        BufferedWriter writer;
++        BufferedWriter writer = null;
+         String payeeId;
+         String payeeNm;
+         
+@@ -488,9 +488,6 @@
+                 writer.newLine();
+                 writer.newLine();
+             }
+-            
+-            writer.flush();
+-            writer.close();
+         }
+         catch (FileNotFoundException e) {
+             LOG.error(reportFile + " not found " + " " + e.getMessage());
+@@ -500,6 +497,13 @@
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());
+             throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
+         }
++        finally {
++            try {
++                writer.flush();
++                writer.close();
++            }
++            catch (Exception e) {}
++        }
+     }
+ 
+     /**
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10441)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10442)
+@@ -177,8 +177,8 @@
+             while ((fileLine = bufferedFileReader.readLine()) != null) {
+                 LOG.info("Bank line: " + fileLine);
+                 
+-                // get a valid systemSource from the file
+-                if (systemSource == null || systemSource.equals("")) {
++                // get a valid systemSource from the file 
++                if (StringUtils.isBlank(systemSource)) {
+                     systemSource = fileLine.substring(150, 152).trim();
+                 }
+                 
+@@ -252,68 +252,68 @@
+         validTypeCodes.add("2");
+         
+         // check customer name, return false if not present
+-        if (bankNm == null || bankNm.equals("")) {
++        if (StringUtils.isBlank(bankNm)) {
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_MISSING_NM_ERROR));
+             return false; 
+         }
+         
+         // check address, return false if not present
+-        if (bankAddr == null || bankAddr.equals("") || bankCity == null || bankCity.equals("") || bankSt == null || bankSt.equals("")
+-             || bankZipCd == null || bankZipCd.equals("")) {
++        if (StringUtils.isBlank(bankAddr) || StringUtils.isBlank(bankCity) || StringUtils.isBlank(bankSt)
++                || StringUtils.isBlank(bankZipCd)) {
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR));
+             return false;            
+         }
+         
+         // check record type code
+-        if (bankTypeCd == null || bankTypeCd.equals("")) {    // if no record type code
++        if (StringUtils.isBlank(bankTypeCd)) {    // if no record type code
+             bank.setBankTypeCode("0");
+         }
+         else if (!validTypeCodes.contains(bankTypeCd)) {    // if an invalid code
+             bank.setBankTypeCode("0");
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_TYP_CD_ERROR));
+         }
+-        else if (bankTypeCd.equals("2") && (bankNewRoutingNbr == null || bankNewRoutingNbr.equals(""))) {    // if no new routing number
++        else if (bankTypeCd.equals("2") && (StringUtils.isBlank(bankNewRoutingNbr))) {    // if no new routing number
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR));
+             return false;
+         }
+         
+         // check office code
+-        if (bankOfficeCd == null || !validOfficeCodes.contains(bankOfficeCd)) {
++        if (StringUtils.isBlank(bankOfficeCd) || !validOfficeCodes.contains(bankOfficeCd)) {
+             bank.setBankOfficeCode("O");
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_OFFICE_CD_ERROR));
+         }
+                 
+         // check new routing number
+-        if (bankNewRoutingNbr == null || bankNewRoutingNbr.equals("")) {
++        if (StringUtils.isBlank(bankNewRoutingNbr)) {
+             bank.setBankNewRoutingNumber("000000000");
+         }
+                         
+         // check area code
+-        if (bankPhoneAreaCd == null || bankPhoneAreaCd.equals("")) {
++        if (StringUtils.isBlank(bankPhoneAreaCd)) {
+             bank.setBankPhoneAreaCode("000");
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
+         }
+         
+         // check phone number prefix
+-        if (bankPhonePrefixNbr == null || bankPhonePrefixNbr.equals("")) {
++        if (StringUtils.isBlank(bankPhonePrefixNbr)) {
+             bank.setBankPhonePrefixNumber("000");
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
+         }
+         
+         // check phone number suffix
+-        if (bankPhoneSuffixNbr == null || bankPhoneSuffixNbr.equals("")) {
++        if (StringUtils.isBlank(bankPhoneSuffixNbr)) {
+             bank.setBankPhoneSuffixNumber("0000");
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
+         }
+         
+         // check institution status code
+-        if (bankInstitutionStatusCd == null || bankInstitutionStatusCd.equals("")) {
++        if (StringUtils.isBlank(bankInstitutionStatusCd)) {
+             bank.setBankInstitutionStatusCode("1");
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_INST_STAT_CD));
+         }
+         
+         // check data view code
+-        if (bankDataViewCd == null || bankDataViewCd.equals("")) {
++        if (StringUtils.isBlank(bankDataViewCd)) {
+             bank.setBankDataViewCode("1");
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_DATA_VIEW_CD));
+         }
+@@ -329,7 +329,7 @@
+      */
+     protected void writeReport(List<BankReportLine> lines, String systemSource) {
+         File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
+-        BufferedWriter writer;
++        BufferedWriter writer = null;
+         String routingNbr;
+         String bankNm;
+         
+@@ -344,9 +344,6 @@
+                 writer.newLine();
+                 writer.newLine();
+             }
+-            
+-            writer.flush();
+-            writer.close();
+         }
+         catch (FileNotFoundException e) {
+             LOG.error(reportFile + " not found " + " " + e.getMessage());
+@@ -356,6 +353,13 @@
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());
+             throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
+         }
++        finally {
++            try {
++                writer.flush();
++                writer.close();
++            }
++            catch (Exception e) {}
++        }
+     }
+ 
+     /**
+@@ -470,14 +474,6 @@
+     }
+ 
+     /**
+-     * Sets the achReportWriterService attribute value.
+-     * @param achReportWriterService The achReportWriterService to set.
+-     */
+-/**    public void setAchReportWriterService(ReportWriterService achReportWriterService) {
+-        this.achReportWriterService = achReportWriterService;
+-    } */
+-
+-    /**
+      * Sets the originCodeDao attribute value.
+      * @param originCodeDao The originCodeDao to set.
+      */

@@ -1,0 +1,564 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 9893)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 9894)
+@@ -70,4 +70,20 @@
+         LOG.info("Total accounts loaded: " + Integer.toString(payeeAccts.size()));
+         return true;
+     }
++
++    /**
++     * Sets the batchInputFileService attribute value.
++     * @param batchInputFileService The batchInputFileService to set.
++     */
++    public void setBatchInputFileService(BatchInputFileService batchInputFileService) {
++        this.batchInputFileService = batchInputFileService;
++    }
++
++    /**
++     * Sets the achPayeeBankAcctInputFileType attribute value.
++     * @param achPayeeBankAcctInputFileType The achPayeeBankAcctInputFileType to set.
++     */
++    public void setAchPayeeBankAcctInputFileType(BatchInputFileType achPayeeBankAcctInputFileType) {
++        this.achPayeeBankAcctInputFileType = achPayeeBankAcctInputFileType;
++    }
+ }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 9893)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 9894)
+@@ -27,7 +27,7 @@
+ import org.kuali.kfs.sys.batch.service.BatchInputFileService;
+ import org.kuali.kfs.sys.exception.ParseException;
+ 
+-public class AchBankServiceImpl extends org.kuali.kfs.pdp.service.impl.AchBankServiceImpl {
++public class AchBankServiceImpl extends org.kuali.kfs.pdp.service.impl.AchBankServiceImpl implements edu.arizona.kfs.pdp.service.AchBankService {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(AchBankServiceImpl.class);
+     
+     private BatchInputFileService batchInputFileService;
+@@ -71,4 +71,20 @@
+         LOG.info("Total banks loaded: " + Integer.toString(banks.size()));
+         return true;
+     }
++    
++    /**
++     * Sets the batchInputFileService attribute value.
++     * @param batchInputFileService The batchInputFileService to set.
++     */
++    public void setBatchInputFileService(BatchInputFileService batchInputFileService) {
++        this.batchInputFileService = batchInputFileService;
++    }
++
++    /**
++     * Sets the achBankInputFileType attribute value.
++     * @param achBankInputFileType The achBankInputFileType to set.
++     */
++    public void setAchBankInputFileType(BatchInputFileType achBankInputFileType) {
++        this.achBankInputFileType = achBankInputFileType;
++    }
+ }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 9893)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 9894)
+@@ -44,14 +44,14 @@
+ 
+         boolean processSuccess = true;
+         List<String> processedFiles = new ArrayList();
+-        for (String inputFileName : fileNamesToLoad) {
++/**        for (String inputFileName : fileNamesToLoad) {
+             processSuccess = payeeAchAccountService.loadAchBankFile(inputFileName);
+             if (processSuccess) {
+                 processedFiles.add(inputFileName);
+             }
+-        }
++        } **/
+ 
+-        removeDoneFiles(processedFiles);
++//        removeDoneFiles(processedFiles);
+ 
+         return processSuccess;
+     }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchReportsStep.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchReportsStep.java	(revision 0)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchReportsStep.java	(revision 9894)
+@@ -0,0 +1,127 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.batch;
++
++import java.io.File;
++import java.io.FileFilter;
++import java.util.Arrays;
++import java.util.Date;
++import java.util.List;
++
++import org.apache.commons.io.filefilter.FileFilterUtils;
++import org.apache.commons.io.filefilter.PrefixFileFilter;
++import org.apache.commons.io.filefilter.SuffixFileFilter;
++import org.kuali.kfs.sys.batch.AbstractStep;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.kfs.sys.service.ReportAggregatorService;
++import org.kuali.rice.kns.service.DateTimeService;
++
++public class AchReportsStep extends AbstractStep {
++
++    protected String outputFilePath;
++    protected String outputFilePrefix;
++    protected String outputFileSuffix;
++    protected ReportAggregatorService reportAggregatorService;
++    protected String inputFilePath;
++    protected String inputFilePrefix;
++    protected String inputFileSuffix;
++
++
++    public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
++        File outputFile = new File(generateOutputFileName());
++        List<File> inputFiles = retrieveFilesToAggregate();
++        reportAggregatorService.aggregateReports(outputFile, inputFiles);
++        return true;
++    }
++
++    protected String generateOutputFileName() {
++        DateTimeService dateTimeService = SpringContext.getBean(DateTimeService.class);
++        Date now = dateTimeService.getCurrentDate();
++        return outputFilePath + File.separator + outputFilePrefix + dateTimeService.toDateTimeStringForFilename(now) + outputFileSuffix;
++    }
++
++    protected List<File> retrieveFilesToAggregate() {
++        File inputDirectory = new File(inputFilePath);
++        if (!inputDirectory.exists() || !inputDirectory.isDirectory()) {
++            throw new RuntimeException(inputFilePath + " does not exist or is not a directory.");
++        }
++        FileFilter filter = FileFilterUtils.andFileFilter(new PrefixFileFilter(inputFilePrefix), new SuffixFileFilter(inputFileSuffix));
++        return Arrays.asList(inputDirectory.listFiles(filter));
++    }
++
++    /**
++     * Sets the outputFilePath attribute value.
++     * 
++     * @param outputFilePath The outputFilePath to set.
++     */
++    public void setOutputFilePath(String outputFilePath) {
++        this.outputFilePath = outputFilePath;
++    }
++
++    /**
++     * Sets the outputFilePrefix attribute value.
++     * 
++     * @param outputFilePrefix The outputFilePrefix to set.
++     */
++    public void setOutputFilePrefix(String outputFilePrefix) {
++        this.outputFilePrefix = outputFilePrefix;
++    }
++
++    /**
++     * Sets the outputFileSuffix attribute value.
++     * 
++     * @param outputFileSuffix The outputFileSuffix to set.
++     */
++    public void setOutputFileSuffix(String outputFileSuffix) {
++        this.outputFileSuffix = outputFileSuffix;
++    }
++
++    /**
++     * Sets the reportAggregatorService attribute value.
++     * 
++     * @param reportAggregatorService The reportAggregatorService to set.
++     */
++    public void setReportAggregatorService(ReportAggregatorService reportAggregatorService) {
++        this.reportAggregatorService = reportAggregatorService;
++    }
++
++    /**
++     * Sets the inputFilePath attribute value.
++     * 
++     * @param inputFilePath The inputFilePath to set.
++     */
++    public void setInputFilePath(String inputFilePath) {
++        this.inputFilePath = inputFilePath;
++    }
++
++    /**
++     * Sets the inputFilePrefix attribute value.
++     * 
++     * @param inputFilePrefix The inputFilePrefix to set.
++     */
++    public void setInputFilePrefix(String inputFilePrefix) {
++        this.inputFilePrefix = inputFilePrefix;
++    }
++
++    /**
++     * Sets the inputFileSuffix attribute value.
++     * 
++     * @param inputFileSuffix The inputFileSuffix to set.
++     */
++    public void setInputFileSuffix(String inputFileSuffix) {
++        this.inputFileSuffix = inputFileSuffix;
++    }
++}
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 9893)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 9894)
+@@ -61,7 +61,7 @@
+      * @see org.kuali.kfs.sys.batch.BatchInputFileType#getFileTypeIdentifer()
+      */
+     public String getFileTypeIdentifer() {
+-        return AZKFSConstants.ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER;
++        return AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER;
+     }
+ 
+ 
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 9893)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 9894)
+@@ -21,22 +21,33 @@
+ import java.io.IOException;
+ import java.io.InputStreamReader;
+ import java.util.ArrayList;
++import java.util.HashMap;
+ import java.util.List;
++import java.util.Map;
+ 
+ import org.apache.commons.lang.StringUtils;
+ import org.apache.log4j.Logger;
+ import org.kuali.kfs.pdp.businessobject.ACHBank;
++import org.kuali.kfs.sys.Message;
+ import org.kuali.kfs.sys.batch.BatchInputFileTypeBase;
++import org.kuali.kfs.sys.batch.service.WrappingBatchService;
+ import org.kuali.kfs.sys.exception.ParseException;
++import org.kuali.kfs.sys.service.ReportWriterService;
++import org.kuali.rice.kns.service.BusinessObjectService;
+ import org.kuali.rice.kns.service.DateTimeService;
++import org.kuali.rice.kns.util.ObjectUtils;
+ 
++import edu.arizona.kfs.module.ld.service.FileHandler;
+ import edu.arizona.kfs.sys.AZKFSConstants;
+ import edu.arizona.kfs.sys.KFSKeyConstants;
+ 
+ public class AchBankInputFileType extends BatchInputFileTypeBase {
+     private static Logger LOG = Logger.getLogger(AchBankInputFileType.class);
+     
++    private BusinessObjectService businessObjectService;
+     private DateTimeService dateTimeService;
++    private FileHandler fileHandler;
++    private ReportWriterService achReportWriterService;
+     
+     /**
+      * No additional information is added to ACH Banking batch files.
+@@ -61,7 +72,7 @@
+      * @see org.kuali.kfs.sys.batch.BatchInputFileType#getFileTypeIdentifer()
+      */
+     public String getFileTypeIdentifer() {
+-        return AZKFSConstants.ACH_BANK_FILE_TYPE_IDENTIFIER;
++        return AZKFSConstants.ACHFileConstants.ACH_BANK_FILE_TYPE_IDENTIFIER;
+     }
+ 
+ 
+@@ -79,13 +90,39 @@
+      */
+     public Object parse(byte[] fileByteContent) throws ParseException {
+         List<ACHBank> bankList = new ArrayList<ACHBank>();
+-        ACHBank currentBank = null;
++//        ((WrappingBatchService) achReportWriterService).initialize();
++//        fileHandler.setUpOutputErrorFile();
++        List<Message> auditReportMessages;
++        String systemSource = "";
++        ACHBank currentBank;
++        ACHBank existingBank;
++        ACHBank validBank;
++        Boolean saveBank = true;
+         BufferedReader bufferedFileReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileByteContent)));
+         String fileLine;
++
++        // need to get system source, use do/while to get it?
++//        achReportWriterService.writeSubTitle("System Source: " + systemSource);
+         
+         try {
+             while ((fileLine = bufferedFileReader.readLine()) != null) {
+                 LOG.info("Bank line: " + fileLine);
++                
++                auditReportMessages = new ArrayList<Message>();
++                currentBank = new ACHBank(fileLine);
++                existingBank = getAchBank(currentBank.getBankRoutingNumber());                
++                if (ObjectUtils.isNull(existingBank)) {  // then we insert a new bank
++                    saveBank = validateBank(currentBank, auditReportMessages);
++                    if (saveBank) {
++                        validBank = new ACHBank();
++                        validBank.setBankRoutingNumber(currentBank.getBankRoutingNumber());
++                        validBank.setBankName(currentBank.getBankName());
++                        auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_LOADED_SUCCESSFULLY, Message.TYPE_WARNING));
++//                        achReportWriterService.writeError(validBank, auditReportMessages);
++                        bankList.add(currentBank);
++                    }
++                }
++
+             }
+         }
+         catch (IOException e) {
+@@ -95,6 +132,98 @@
+         
+         return bankList;
+     }
++    
++    /**
++     * Gets the matching ACHBank record from the ACHBank table.
++     *  
++     * @return Returns the matching ACHBank object, null if accountNumber is invalid.
++     */
++    private ACHBank getAchBank(String bankRoutingNumber) {
++                
++        Map<String, String> pkMap = new HashMap<String, String>();
++        pkMap.put("bankRoutingNumber", bankRoutingNumber);
++        ACHBank bank = (ACHBank) businessObjectService.findByPrimaryKey(ACHBank.class, pkMap);
++        
++        return bank;
++    }
++    
++    /**
++     * This method validates specific fields in potentially new bank record. 
++     * 
++     * Return false if a validation fails that prohibits the insertion of the record; true otherwise.
++     * 
++     * @param bank
++     * @return
++     */
++    private Boolean validateBank(ACHBank bank, List<Message> reportMessages) {
++        String bankRoutingNbr = bank.getBankRoutingNumber();
++        String bankOfficeCd = bank.getBankOfficeCode();
++        String bankNewRoutingNbr = bank.getBankNewRoutingNumber();
++        String bankTypeCode = bank.getBankTypeCode();
++        String bankName = bank.getBankName();
++        List<String> validOfficeCodes = new ArrayList<String>();
++        validOfficeCodes.add("O");
++        validOfficeCodes.add("B");
++        List<String> validTypeCodes = new ArrayList<String>();
++        validTypeCodes.add("0");
++        validTypeCodes.add("1");
++        validTypeCodes.add("2");
++        ACHBank errorBank = new ACHBank();
++        errorBank.setBankRoutingNumber(bankRoutingNbr);
++        errorBank.setBankName(bankName);
++                
++        // check office code
++        if (bankOfficeCd == null || !validOfficeCodes.contains(bankOfficeCd)) {
++            bank.setBankOfficeCode("O");
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_INVALID_OFFICE_CD_ERROR, Message.TYPE_WARNING));
++ //           achReportWriterService.writeError(errorBank, reportMessages);
++        }
++        
++        // check record type code
++        if (bankTypeCode == null || bankTypeCode.equals("")) {    // if no record type code
++            bank.setBankTypeCode("0");
++        }
++        else if (!validTypeCodes.contains(bankTypeCode)) {    // if an invalid code
++            bank.setBankTypeCode("0");
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_INVALID_BANK_TYP_CD_ERROR, Message.TYPE_WARNING));
++ //           achReportWriterService.writeError(errorBank, reportMessages);
++        }
++        else if (bankTypeCode.equals("2") && (bankNewRoutingNbr == null || bankNewRoutingNbr.equals(""))) {    // if no new routing number
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR, Message.TYPE_WARNING));
++   //         achReportWriterService.writeError(errorBank, reportMessages);
++            return false;
++        }
++        
++        // remove change date
++        
++        // check new routing number
++        
++        // check customer name, return false if not present
++        
++        // check address, return false if not present
++        
++        // check city, return false if not present
++        
++        // check state, return false if not present
++        
++        // check zipcode, return false if not present
++        
++        // remove zipcode extension
++        
++        // check area code
++        
++        // check phone number prefix
++        
++        // check phone number suffix
++        
++        // check institution status code
++        
++        // check data view code
++        
++        
++        
++        return true;
++    }
+ 
+     /**
+      * @see org.kuali.kfs.sys.batch.BatchInputFileType#process(java.lang.String, java.lang.Object)
+@@ -129,10 +258,26 @@
+     }
+ 
+     /**
++     * Sets the businessObjectService attribute value.
++     * @param businessObjectService The businessObjectService to set.
++     */
++    public void setBusinessObjectService(BusinessObjectService businessObjectService) {
++        this.businessObjectService = businessObjectService;
++    }
++
++    /**
+      * Sets the dateTimeService attribute value.
+      * @param dateTimeService The dateTimeService to set.
+      */
+     public void setDateTimeService(DateTimeService dateTimeService) {
+         this.dateTimeService = dateTimeService;
++    }
++
++    /**
++     * Sets the achReportWriterService attribute value.
++     * @param achReportWriterService The achReportWriterService to set.
++     */
++    public void setAchReportWriterService(ReportWriterService achReportWriterService) {
++        this.achReportWriterService = achReportWriterService;
+     }    
+ }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 9893)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 9894)
+@@ -64,8 +64,9 @@
+ 	<bean id="pdpLoadBankDataJob" parent="scheduledJobDescriptor">
+ 		<property name="steps">
+ 			<list>
+-				<ref bean="pdpLoadAchBankStep" />
+-				<ref bean="pdpLoadAchPayeeBankAcctStep" />
++				<ref bean="loadAchBankStep" />
++				<ref bean="loadAchPayeeBankAcctStep" />
++				<ref bean="achReportsStep" />
+ 			</list>
+ 		</property>
+ 	</bean>
+@@ -88,7 +89,7 @@
+ 		</property>
+ 	</bean>
+ 
+-	<bean id="pdpLoadAchBankStep" class="edu.arizona.kfs.pdp.batch.LoadAchBankStep" parent="step">
++	<bean id="loadAchBankStep" class="edu.arizona.kfs.pdp.batch.LoadAchBankStep" parent="step">
+ 		<property name="achBankService">
+ 			<ref bean="achBankService" />
+ 		</property>
+@@ -100,7 +101,7 @@
+ 		</property>	
+ 	</bean>
+ 
+-	<bean id="pdpLoadAchPayeeBankAcctStep" class="edu.arizona.kfs.pdp.batch.LoadAchPayeeBankAcctStep" parent="step">
++	<bean id="loadAchPayeeBankAcctStep" class="edu.arizona.kfs.pdp.batch.LoadAchPayeeBankAcctStep" parent="step">
+ 		<property name="payeeAchAccountService">
+ 			<ref bean="payeeAchAccountService" />
+ 		</property>
+@@ -111,6 +112,16 @@
+ 		    <ref bean="achPayeeBankAcctInputFileType" />
+ 		</property>	
+ 	</bean>
++
++	<bean id="achReportsStep" class="edu.arizona.kfs.pdp.batch.AchReportsStep" parent="step">
++	    <property name="outputFilePath" value="${reports.directory}/pdp"/>
++	    <property name="outputFilePrefix" value="pdpAchJob_"/>
++	    <property name="outputFileSuffix" value=".txt"/>
++	    <property name="inputFilePath" value="${temp.directory}"/>
++	    <property name="inputFilePrefix" value="pdpAchJob_"/>
++	    <property name="inputFileSuffix" value=".txt"/>
++	    <property name="reportAggregatorService" ref="reportAggregatorService"/>
++	</bean>
+ 		
+ 	<bean id="shippingInvoiceLoadService" class="edu.arizona.kfs.pdp.batch.service.impl.ShippingInvoiceLoadServiceImpl">
+ 		<property name="businessObjectService">
+@@ -142,10 +153,10 @@
+ 		</property>
+ 	</bean>	
+ 
+-	<bean id="achBankService" class="edu.arizona.kfs.pdp.batch.service.impl.AchBankServiceImpl">
+- 		<property name="businessObjectService">
++	<bean id="achBankService" class="edu.arizona.kfs.pdp.service.impl.AchBankServiceImpl">
++<!--  		<property name="businessObjectService">
+ 			<ref bean="businessObjectService" />
+-		</property>
++		</property> -->
+ 		<property name="batchInputFileService">
+ 			<ref bean="batchInputFileService" />
+ 		</property>
+@@ -154,10 +165,10 @@
+ 		</property>	
+ 	</bean>
+ 
+- 	<bean id="payeeAchAccountService" class="edu.arizona.kfs.pdp.batch.service.impl.PayeeAchAccountServiceImpl">
+-		<property name="businessObjectService">
++ 	<bean id="payeeAchAccountService" class="edu.arizona.kfs.pdp.service.impl.PayeeAchAccountServiceImpl">
++<!-- 		<property name="businessObjectService">
+ 			<ref bean="businessObjectService" />
+-		</property>
++		</property> -->
+ 		<property name="batchInputFileService">
+ 			<ref bean="batchInputFileService" />
+ 		</property>
+@@ -188,19 +199,43 @@
+ 	    <property name="directoryPath">
+ 	       <value>${staging.directory}/pdp/achBanks</value>
+ 	    </property>
++	    <property name="fileExtension">
++	       <value>txt</value>
++	    </property>
++		<property name="businessObjectService">
++			<ref bean="businessObjectService" />
++		</property>
+ 	    <property name="dateTimeService">
+ 	       <ref bean="dateTimeService"/>
+ 	    </property>
++	    <property name="achReportWriterService">
++	       <ref bean="achReportWriterService" />
++	    </property>
+ 	</bean>
+ 
+ 	<bean id="achPayeeBankAcctInputFileType" class="edu.arizona.kfs.pdp.batch.AchPayeeBankAcctInputFileType "> 
+ 	    <property name="directoryPath">
+-	       <value>${staging.directory}/pdp/payeeBankAccounts</value>
++	       <value>${staging.directory}/pdp/achPayeeBankAccounts</value>
+ 	    </property>
++	    <property name="fileExtension">
++	       <value>txt</value>
++	    </property>
+ 	    <property name="dateTimeService">
+ 	       <ref bean="dateTimeService"/>
+ 	    </property>
+ 	</bean>
++
++ <bean id="achReportWriterService" parent="reportWriterService">
++     <property name="filePath" value="${temp.directory}"/>
++     <property name="fileNamePrefix" value="pdpAchBankJob-ach_bank_audit_report"/>
++        <property name="title" value="ACH BANK AUDIT REPORT"/>
++        <property name="classToBusinessObjectReportHelperBeanNames">
++         <map>
++          <entry key="org.kuali.kfs.pdp.businessobject.ACHBank" value="achBankReportHelper"/>
++         </map>
++        </property>
++        <property name="aggregationModeOn" value="true"/>
++    </bean>
+ 	
+ 	<bean id="shippingInvoiceDao" parent="platformAwareDao" class="edu.arizona.kfs.pdp.dataaccess.impl.ShippingInvoiceDaoOjb" />		
+ </beans>

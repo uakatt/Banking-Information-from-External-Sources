@@ -1,0 +1,70 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10081)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10082)
+@@ -48,6 +48,7 @@
+ 			<list merge="true">
+ 				<value>processShippingInvoiceJob</value>
+ 				<value>pdpLoadBankDataJob</value>
++				<value>pdpLoadPayeeACHDataJob</value>
+ 			</list>
+ 		</property>
+ 	</bean>
+@@ -65,8 +66,14 @@
+ 		<property name="steps">
+ 			<list>
+ 				<ref bean="loadAchBankStep" />
++			</list>
++		</property>
++	</bean>
++
++	<bean id="pdpLoadPayeeACHDataJob" parent="scheduledJobDescriptor">
++		<property name="steps">
++			<list>
+ 				<ref bean="loadAchPayeeBankAcctStep" />
+-<!-- 				<ref bean="achReportsStep" /> -->
+ 			</list>
+ 		</property>
+ 	</bean>
+@@ -98,7 +105,19 @@
+ 		</property>
+ 		<property name="achBankInputFileType">
+ 		    <ref bean="achBankInputFileType" />
+-		</property>	
++		</property>
++ 	    <property name="reportPath">
++	       <value>${reports.directory}/pdp</value>
++	    </property>
++	    <property name="reportPrefix">
++	       <value>pdpLoadBankDataJob-ach_bank_failed_file_report</value>
++	    </property>
++	    <property name="reportExtension">
++	       <value>txt</value>
++	    </property>
++		<property name="dateTimeService">
++			<ref bean="dateTimeService" />
++		</property>
+ 	</bean>
+ 
+ 	<bean id="loadAchPayeeBankAcctStep" class="edu.arizona.kfs.pdp.batch.LoadAchPayeeBankAcctStep" parent="step">
+@@ -110,7 +129,19 @@
+ 		</property>
+ 		<property name="achPayeeBankAcctInputFileType">
+ 		    <ref bean="achPayeeBankAcctInputFileType" />
+-		</property>	
++		</property>
++		<property name="reportPath">
++	       <value>${reports.directory}/pdp</value>
++	    </property>
++	    <property name="reportPrefix">
++	       <value>pdpLoadBankDataJob-payee_ach_failed_file_report</value>
++	    </property>
++	    <property name="reportExtension">
++	       <value>txt</value>
++	    </property>
++		<property name="dateTimeService">
++			<ref bean="dateTimeService" />
++		</property>
+ 	</bean>
+ 
+ <!-- 	<bean id="achReportsStep" class="edu.arizona.kfs.pdp.batch.AchReportsStep" parent="step">

@@ -1,0 +1,32 @@
+Index: financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 10159)
++++ financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 10160)
+@@ -42,26 +42,7 @@
+     public void tearDown() throws Exception {
+         super.tearDown();
+     }
+-    
+-    protected void setUpExistingBank() {
+-        existingBank.setBankRoutingNumber("123456789");
+-        existingBank.setBankOfficeCode("O");
+-        existingBank.setBankServiceNumber("1122334451");
+-        existingBank.setBankTypeCode("0");
+-        existingBank.setBankNewRoutingNumber("987654321");
+-        existingBank.setBankName("BANK OF AMERICA");
+-        existingBank.setBankStreetAddress("1234 N. Speedway Blvd.");
+-        existingBank.setBankCityName("Tucson");
+-        existingBank.setBankStateCode("AZ");
+-        existingBank.setBankZipCode("85721");
+-        existingBank.setBankPhoneAreaCode("520");
+-        existingBank.setBankPhonePrefixNumber("555");
+-        existingBank.setBankPhoneSuffixNumber("1111");
+-        existingBank.setBankInstitutionStatusCode("1");
+-        existingBank.setBankDataViewCode("1");
+-        existingBank.setActive(true);
+-    }
+-    
++        
+     protected void setUpNewBank() {
+         newBank = new ACHBank();
+         newBank.setBankRoutingNumber("987654321");

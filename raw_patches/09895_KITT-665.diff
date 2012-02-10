@@ -1,0 +1,28 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 9894)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 9895)
+@@ -35,8 +35,6 @@
+     public static final String DEFAULT_NUMBER_OF_FISCAL_PERIODS_ERROR_CERTIFICATION_TAB_REQUIRED = "DEFAULT_NUMBER_OF_FISCAL_PERIODS_ERROR_CERTIFICATION_TAB_REQUIRED";
+     public static final String BI_REPORT_URL = "BI_REPORT_URL"; // KITT-513
+     public static final String PCDH_FILE_TYPE_IDENTIFIER = "procurementCardHolderInputFileType";
+-    public static final String ACH_BANK_FILE_TYPE_IDENTIFIER = "achBankInputFileType";    // KITT-665
+-    public static final String ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER = "achPayeeBankAcctInputFileType";    // KITT-665
+         
+     //KevinMcO Docuware KITT-414 Constants
+     public static final String VIEW_DOCUWARE = "viewImages"; //for KITT-414
+@@ -53,4 +51,14 @@
+         public static final String SHIP_FILE_TYPE_IDENTIFIER = "shippingInputFileType";
+         public static final String SHIPPING_FILE_NAME = "extract_for_shipping";
+     }
++    
++    // KITT-665
++    public static final class ACHFileConstants {
++        public static final String ACH_BANK_FILE_TYPE_IDENTIFIER = "achBankInputFileType";
++        public static final String ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER = "achPayeeBankAcctInputFileType";
++        public static final String ACH_BANK_LOADED_SUCCESSFULLY = "Bank record successfully loaded";
++        public static final String ACH_INVALID_OFFICE_CD_ERROR = "Invalid office code - default value O used";
++        public static final String ACH_INVALID_BANK_TYP_CD_ERROR = "Invalid record type code - default value 0 used";
++        public static final String ACH_BANK_TYP_CD_ROUTING_NBR_ERROR = "New routing number not provided for record type code 2 - record not loaded";
++    }
+ }

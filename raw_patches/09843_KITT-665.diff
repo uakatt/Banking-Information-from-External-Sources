@@ -1,0 +1,20 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 9842)
++++ financial-system/kfs/branches/mod-hlo/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 9843)
+@@ -34,9 +34,13 @@
+     public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
+         LOG.debug("execute() started");
+ 
+-        String filename = getParameterService().getParameterValue(KfsParameterConstants.PRE_DISBURSEMENT_ALL.class, PdpParameterConstants.ACH_BANK_INPUT_FILE);
++        /** start AZ KITT-665 **/        
++        throw new RuntimeException("This is deprecated; not intended to be used in UA implementation.");
++        /** end AZ KITT-665 **/
++        
++//        String filename = getParameterService().getParameterValue(KfsParameterConstants.PRE_DISBURSEMENT_ALL.class, PdpParameterConstants.ACH_BANK_INPUT_FILE);
+ 
+-        return achBankService.reloadTable(directoryName + filename);
++//        return achBankService.reloadTable(directoryName + filename);
+     }
+ 
+     public void setAchBankService(AchBankService achBankService) {

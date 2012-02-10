@@ -1,0 +1,41 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10056)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10057)
+@@ -194,7 +194,7 @@
+ 	       <value>${staging.directory}/pdp/achBanks</value>
+ 	    </property>
+  	    <property name="reportPath">
+-	       <value>${reports.directory}/pdp/achBanks</value>
++	       <value>${reports.directory}/pdp</value>
+ 	    </property>
+ 	    <property name="reportPrefix">
+ 	       <value>pdpLoadBankDataJob-ach_bank_audit_report</value>
+@@ -213,7 +213,7 @@
+ 	    </property>
+  		<property name="originationCodeDao">
+ 			<ref bean="originationCodeDao" />
+-		</property>    
++		</property>
+ <!-- 	    <property name="achReportWriterService">
+ 	       <ref bean="achBankReportWriterService" />
+ 	    </property> -->
+@@ -224,7 +224,7 @@
+ 	       <value>${staging.directory}/pdp/achPayeeBankAccounts</value>
+ 	    </property>
+ 	    <property name="reportPath">
+-	       <value>${reports.directory}/pdp/achPayeeBankAccounts</value>
++	       <value>${reports.directory}/pdp</value>
+ 	    </property>
+ 	    <property name="reportPrefix">
+ 	       <value>pdpLoadBankDataJob-payee_ach_audit_report</value>
+@@ -241,6 +241,9 @@
+ 	    <property name="dateTimeService">
+ 	       <ref bean="dateTimeService"/>
+ 	    </property>
++ 		<property name="originationCodeDao">
++			<ref bean="originationCodeDao" />
++		</property>	    
+ <!--    <property name="achReportWriterService">
+ 	       <ref bean="achPayeeAcctReportWriterService" />
+ 	    </property>-->	    

@@ -1,0 +1,19 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10422)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10423)
+@@ -474,14 +474,6 @@
+     }
+ 
+     /**
+-     * Sets the achReportWriterService attribute value.
+-     * @param achReportWriterService The achReportWriterService to set.
+-     */
+-/**    public void setAchReportWriterService(ReportWriterService achReportWriterService) {
+-        this.achReportWriterService = achReportWriterService;
+-    } */
+-
+-    /**
+      * Sets the originCodeDao attribute value.
+      * @param originCodeDao The originCodeDao to set.
+      */

@@ -1,0 +1,289 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 10078)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 10079)
+@@ -15,7 +15,11 @@
+  */
+ package edu.arizona.kfs.pdp.batch;
+ 
++import java.io.BufferedWriter;
+ import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.io.PrintWriter;
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.List;
+@@ -25,6 +29,7 @@
+ import org.kuali.kfs.sys.batch.AbstractStep;
+ import org.kuali.kfs.sys.batch.BatchInputFileType;
+ import org.kuali.kfs.sys.batch.service.BatchInputFileService;
++import org.kuali.rice.kns.service.DateTimeService;
+ 
+ public class LoadAchPayeeBankAcctStep extends AbstractStep {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(LoadAchBankStep.class);
+@@ -32,6 +37,10 @@
+     private PayeeAchAccountService payeeAchAccountService;
+     private BatchInputFileService batchInputFileService;
+     private BatchInputFileType achPayeeBankAcctInputFileType;
++    private String reportPath;
++    private String reportPrefix;
++    private String reportExtension;
++    private DateTimeService dateTimeService;
+     
+     /**
+      * Controls the ACH bank file load process.
+@@ -41,22 +50,70 @@
+     public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
+         LOG.debug("execute() started");
+         List<String> fileNamesToLoad = batchInputFileService.listInputFileNamesWithDoneFile(achPayeeBankAcctInputFileType);
+-
+         boolean processSuccess = true;
+         List<String> processedFiles = new ArrayList();
++        List<String> failedFiles = new ArrayList<String>();
++        
+         for (String inputFileName : fileNamesToLoad) {
+             processSuccess = payeeAchAccountService.loadAchPayeeAccountFile(inputFileName);
++
+             if (processSuccess) {
+                 processedFiles.add(inputFileName);
+             }
++            else {
++                failedFiles.add(inputFileName);
++            }
+         }
+ 
++        if (failedFiles.size() > 0) {
++            writeErrorReport(failedFiles);
++        }
++        
+         removeDoneFiles(processedFiles);
+ 
+         return processSuccess;
+     }
+     
+     /**
++     * This method writes a simple error report that tells which files didn't get processed successfully.
++     * 
++     * @param lines
++     */
++    protected void writeErrorReport(List<String> fileNames) {
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        BufferedWriter writer;
++        String routingNbr;
++        String bankNm;
++        
++        try {
++            writer = new BufferedWriter(new PrintWriter(reportFile));
++
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
++            writer.write("Payee ACH Account Interface Failed Files");
++            writer.newLine();
++            writer.write("File Name");
++            writer.newLine();
++            
++            for (String fileName: fileNames) {
++                writer.write(fileName);
++                writer.newLine();
++            }
++            
++            writer.flush();
++            writer.close();
++        }
++        catch (FileNotFoundException e) {
++            LOG.error(reportFile + " not found " + " " + e.getMessage());
++            throw new RuntimeException(reportFile + " not found " + e.getMessage(), e);
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++    
++    /**
+      * Clears out associated .done files for the processed data files.
+      */
+     private void removeDoneFiles(List<String> dataFileNames) {
+@@ -92,5 +149,37 @@
+         this.achPayeeBankAcctInputFileType = achPayeeBankAcctInputFileType;
+     }
+ 
++    /**
++     * Sets the reportPath attribute value.
++     * @param reportPath The reportPath to set.
++     */
++    public void setReportPath(String reportPath) {
++        this.reportPath = reportPath;
++    }
+ 
++    /**
++     * Sets the reportPrefix attribute value.
++     * @param reportPrefix The reportPrefix to set.
++     */
++    public void setReportPrefix(String reportPrefix) {
++        this.reportPrefix = reportPrefix;
++    }
++
++    /**
++     * Sets the reportExtension attribute value.
++     * @param reportExtension The reportExtension to set.
++     */
++    public void setReportExtension(String reportExtension) {
++        this.reportExtension = reportExtension;
++    }
++
++    /**
++     * Sets the dateTimeService attribute value.
++     * @param dateTimeService The dateTimeService to set.
++     */
++    public void setDateTimeService(DateTimeService dateTimeService) {
++        this.dateTimeService = dateTimeService;
++    }
++
++
+ }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 10078)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 10079)
+@@ -15,7 +15,11 @@
+  */
+ package edu.arizona.kfs.pdp.batch;
+ 
++import java.io.BufferedWriter;
+ import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.io.PrintWriter;
+ import java.util.ArrayList;
+ import java.util.Date;
+ import java.util.List;
+@@ -24,7 +28,9 @@
+ import org.kuali.kfs.sys.batch.AbstractStep;
+ import org.kuali.kfs.sys.batch.BatchInputFileType;
+ import org.kuali.kfs.sys.batch.service.BatchInputFileService;
++import org.kuali.rice.kns.service.DateTimeService;
+ 
++import edu.arizona.kfs.pdp.batch.AchBankInputFileType.BankReportLine;
+ import edu.arizona.kfs.pdp.service.AchBankService;
+ 
+ public class LoadAchBankStep extends AbstractStep {
+@@ -33,6 +39,10 @@
+     private AchBankService achBankService;
+     private BatchInputFileService batchInputFileService;
+     private BatchInputFileType achBankInputFileType;
++    private String reportPath;
++    private String reportPrefix;
++    private String reportExtension;
++    private DateTimeService dateTimeService;
+     
+     /**
+      * Controls the ACH bank file load process.
+@@ -42,20 +52,68 @@
+     public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
+         LOG.debug("execute() started");
+         List<String> fileNamesToLoad = batchInputFileService.listInputFileNamesWithDoneFile(achBankInputFileType);
+-
+         boolean processSuccess = true;
+         List<String> processedFiles = new ArrayList();
++        List<String> failedFiles = new ArrayList<String>();
++        
+         for (String inputFileName : fileNamesToLoad) {
+             processSuccess = achBankService.loadAchBankFile(inputFileName);
++      
+             if (processSuccess) {
+                 processedFiles.add(inputFileName);
+             }
++            else {
++                failedFiles.add(inputFileName);
++            }
+         }
++        
++        if (failedFiles.size() > 0) {
++            writeErrorReport(failedFiles);
++        }
+ 
+         removeDoneFiles(processedFiles);
+ 
+         return processSuccess;
+     }
++
++    /**
++     * This method writes a simple error report that tells which files didn't get processed successfully.
++     * 
++     * @param lines
++     */
++    protected void writeErrorReport(List<String> fileNames) {
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        BufferedWriter writer;
++        String routingNbr;
++        String bankNm;
++        
++        try {
++            writer = new BufferedWriter(new PrintWriter(reportFile));
++
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
++            writer.write("ACH Bank Interface Failed Files");
++            writer.newLine();
++            writer.write("File Name");
++            writer.newLine();
++            
++            for (String fileName: fileNames) {
++                writer.write(fileName);
++                writer.newLine();
++            }
++            
++            writer.flush();
++            writer.close();
++        }
++        catch (FileNotFoundException e) {
++            LOG.error(reportFile + " not found " + " " + e.getMessage());
++            throw new RuntimeException(reportFile + " not found " + e.getMessage(), e);
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
+     
+     /**
+      * Clears out associated .done files for the processed data files.
+@@ -92,4 +150,36 @@
+     public void setAchBankInputFileType(BatchInputFileType achBankInputFileType) {
+         this.achBankInputFileType = achBankInputFileType;
+     }
++
++    /**
++     * Sets the reportPath attribute value.
++     * @param reportPath The reportPath to set.
++     */
++    public void setReportPath(String reportPath) {
++        this.reportPath = reportPath;
++    }
++
++    /**
++     * Sets the reportPrefix attribute value.
++     * @param reportPrefix The reportPrefix to set.
++     */
++    public void setReportPrefix(String reportPrefix) {
++        this.reportPrefix = reportPrefix;
++    }
++
++    /**
++     * Sets the reportExtension attribute value.
++     * @param reportExtension The reportExtension to set.
++     */
++    public void setReportExtension(String reportExtension) {
++        this.reportExtension = reportExtension;
++    }
++
++    /**
++     * Sets the dateTimeService attribute value.
++     * @param dateTimeService The dateTimeService to set.
++     */
++    public void setDateTimeService(DateTimeService dateTimeService) {
++        this.dateTimeService = dateTimeService;
++    }
+ }

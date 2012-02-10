@@ -1,0 +1,987 @@
+Index: financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+===================================================================
+--- financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 11129)
++++ financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 11130)
+@@ -24,10 +24,18 @@
+ import org.kuali.kfs.sys.ConfigureContext;
+ import org.kuali.kfs.sys.context.KualiTestBase;
+ import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.kim.bo.Person;
++import org.kuali.rice.kim.bo.impl.PersonImpl;
++import org.kuali.rice.kim.service.GroupService;
++import org.kuali.rice.kim.service.PersonService;
++import org.kuali.rice.kim.service.impl.GroupServiceImpl;
++import org.kuali.rice.kns.bo.BusinessObject;
+ import org.kuali.rice.kns.bo.PersistableBusinessObject;
+ import org.kuali.rice.kns.dao.BusinessObjectDao;
+ import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.service.ParameterService;
+ import org.kuali.rice.kns.service.impl.BusinessObjectServiceImpl;
++import org.kuali.rice.kns.service.impl.ParameterServiceImpl;
+ 
+ import edu.arizona.kfs.pdp.batch.AchPayeeBankAcctInputFileType.PayeeReportLine;
+ import edu.arizona.kfs.sys.AZKFSConstants;
+@@ -41,6 +49,12 @@
+     protected List<PayeeACHAccount> payeeAccountList;
+     protected BusinessObjectService oldBusinessObjectService;
+     protected BusinessObjectService boService;
++    protected PersonService<Person> oldPersonService;
++    protected PersonService<Person> personService;
++    protected GroupService oldGroupService;
++    protected GroupService groupService;
++    protected ParameterService oldParameterService;
++    protected ParameterService parameterService;
+     
+     public void setUp() throws Exception {
+         super.setUp();
+@@ -50,11 +64,17 @@
+         setUpNewPayeeAcct();
+         setUpExistingPayeeAcct();
+         oldBusinessObjectService = payeeInputFileType.getBusinessObjectService();
++        oldPersonService = payeeInputFileType.getPersonService();
++        oldGroupService = payeeInputFileType.getGroupService();
++        oldParameterService = payeeInputFileType.getParameterService();
+     }
+     
+     public void tearDown() throws Exception {
+         super.tearDown();
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
++        payeeInputFileType.setGroupService(oldGroupService);
++        payeeInputFileType.setParameterService(oldParameterService);
+     }
+     
+     protected void setUpNewPayeeAcct() {
+@@ -67,7 +87,7 @@
+         newPayeeAcct.setAchTransactionType(null);
+         newPayeeAcct.setActive(true);
+         newPayeeAcct.setBankAccountTypeCode("22");
+-        newPayeeAcct.setPayeeIdNumber("37059-2");
++        newPayeeAcct.setPayeeIdNumber("132004288");
+     }
+     
+     protected void setUpExistingPayeeAcct() {
+@@ -86,7 +106,7 @@
+     // test if routing number doesn't exist in our database
+     public void testProcessPayeeAcct_nonExistentRoutingNumber() throws Exception {
+         String currentRoutingNbr = newPayeeAcct.getBankRoutingNumber();
+-        boService = new MyBusinessObjectServiceWithNonExistingRouting();
++        boService = new MyBusinessObjectServiceWithNonExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
+         reportLines.clear();
+                 
+@@ -100,7 +120,7 @@
+ 
+     public void testProcessPayeeAcct_missingPayeeIDNumber() throws Exception {
+         String currentPayeeID = newPayeeAcct.getPayeeIdNumber();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
+         reportLines.clear();
+         
+@@ -114,7 +134,7 @@
+ 
+     public void testProcessPayeeAcct_missingEmailAddress() throws Exception {
+         String currentEmailAddr = newPayeeAcct.getPayeeEmailAddress();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
+         reportLines.clear();
+         
+@@ -125,30 +145,33 @@
+         
+         assertEquals("Missing email address and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
+     }
+-    
++
+     // test for a valid payee routing number
+     public void testValidatePayeeAcct_missingRoutingNumber() throws Exception {
+         String currentRoutingNbr = newPayeeAcct.getBankRoutingNumber();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
++        personService = new MyPersonServiceWithPersonMatch();
++        payeeInputFileType.setPersonService(personService);
+         reportLines.clear();
+         
+         newPayeeAcct.setBankRoutingNumber("");
+         payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
+         newPayeeAcct.setBankRoutingNumber(currentRoutingNbr);
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
+         
+         assertEquals("Missing routing number and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR);
+     }
+     
+     public void testValidatePayeeAcct_missingBankAccount() throws Exception {
+         String currentBankAcct = newPayeeAcct.getBankAccountNumber();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
+         reportLines.clear();
+         
+         newPayeeAcct.setBankAccountNumber("");
+-        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        payeeInputFileType.processPayeeAcct(newPayeeAcct, reportLines, payeeAccountList);
+         newPayeeAcct.setBankAccountNumber(currentBankAcct);
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
+         
+@@ -157,26 +180,64 @@
+     
+     public void testValidatePayeeAcct_missingPayeeName() throws Exception {
+         String currentPayeeName = newPayeeAcct.getPayeeName();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
++        personService = new MyPersonServiceWithPersonMatch();
++        payeeInputFileType.setPersonService(personService);
+         reportLines.clear();
+         
+         newPayeeAcct.setPayeeName("");
+         payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
+         newPayeeAcct.setPayeeName(currentPayeeName);
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
+         
+         assertEquals("Missing payee name and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR);
+     }
++        
++    public void testValidatePayeeAcct_payeeInOverrideGroup() throws Exception {
++        String currentPayeeName = newPayeeAcct.getPayeeName();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
++        payeeInputFileType.setBusinessObjectService(boService);
++        personService = new MyPersonServiceWithPersonMatch();
++        payeeInputFileType.setPersonService(personService);
++        groupService = new MyGroupServiceWithMatchingPerson();
++        payeeInputFileType.setGroupService(groupService);
++        parameterService = new MyParameterServiceWithGroupId();
++        payeeInputFileType.setParameterService(parameterService);
++        reportLines.clear();
++        
++        payeeInputFileType.processPayeeAcct(newPayeeAcct, reportLines, payeeAccountList);        
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
++        payeeInputFileType.setGroupService(oldGroupService);
++        payeeInputFileType.setParameterService(oldParameterService);
++        
++        assertEquals("Payee is in override group and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_OVERRIDE_EMPL_ERROR);
++    }
+     
++    public void testValidatePayeeAcct_missingPayeeMatch() throws Exception {
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
++        payeeInputFileType.setBusinessObjectService(boService);
++        personService = new MyPersonServiceWithNoPersonMatch();
++        payeeInputFileType.setPersonService(personService);
++        reportLines.clear();
++        
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
++        
++        assertEquals("No payee match and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_NO_NAME_MATCH);
++    }
++    
+     public void testValidatePayeeAcct_invalidPayeeIDType() throws Exception {
+         String currentPayeeIdTypeCode = newPayeeAcct.getPayeeIdentifierTypeCode();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
+         reportLines.clear();
+         
+         newPayeeAcct.setPayeeIdentifierTypeCode("");
+-        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        payeeInputFileType.processPayeeAcct(newPayeeAcct, reportLines, payeeAccountList);
+         newPayeeAcct.setPayeeIdentifierTypeCode(currentPayeeIdTypeCode);
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
+         
+@@ -186,8 +247,10 @@
+     public void testValidatePayeeAcct_invalidAchTransactionType() throws Exception {
+         String currentAchTransactionType = newPayeeAcct.getAchTransactionType();
+         boolean correctType = false;
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
++        personService = new MyPersonServiceWithPersonMatch();
++        payeeInputFileType.setPersonService(personService);
+         reportLines.clear();
+         
+         newPayeeAcct.setAchTransactionType("");
+@@ -196,43 +259,64 @@
+         if (newPayeeAcct.getAchTransactionType().equals("ACH")) {
+             correctType = true;
+         }
+-        assertTrue("Invalid ACH transaction type and it wasn't set to the default.", correctType);
+         
+         newPayeeAcct.setAchTransactionType(currentAchTransactionType);
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
++        
++        assertTrue("Invalid ACH transaction type and it wasn't set to the default.", correctType);
+     }
+     
+     public void testValidatePayeeAcct_missingBankAccountTypeCode() throws Exception {
+         String currentBankAccountTypeCode = newPayeeAcct.getBankAccountTypeCode();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
++        personService = new MyPersonServiceWithPersonMatch();
++        payeeInputFileType.setPersonService(personService);
+         reportLines.clear();
+         
+         newPayeeAcct.setBankAccountTypeCode("");
+         payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
+         newPayeeAcct.setBankAccountTypeCode(currentBankAccountTypeCode);
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
+         
+         assertEquals("Missing bank account type and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR);
+     }
+     
+     public void testValidatePayeeAcct_invalidBankAccountTypeCode() throws Exception {
+         String currentBankAccountTypeCode = newPayeeAcct.getBankAccountTypeCode();
+-        boService = new MyBusinessObjectServiceWithExistingRouting();
++        boService = new MyBusinessObjectServiceWithExistingRoutingNumber();
+         payeeInputFileType.setBusinessObjectService(boService);
++        personService = new MyPersonServiceWithPersonMatch();
++        payeeInputFileType.setPersonService(personService);
+         reportLines.clear();
+         
+         newPayeeAcct.setBankAccountTypeCode("00");
+         payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
+         newPayeeAcct.setBankAccountTypeCode(currentBankAccountTypeCode);
+         payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        payeeInputFileType.setPersonService(oldPersonService);
+         
+         assertEquals("Invalid bank account type and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR);
+     }
+     
++    // compare new payee acct to an existing one, test if no payee match with updated payee
++    public void testComparePayeeAccts_testInvalidPayee() throws Exception {
++        personService = new MyPersonServiceWithNoPersonMatch();
++        payeeInputFileType.setPersonService(personService);
++        payeeInputFileType.comparePayeeAccts(newPayeeAcct, existingPayeeAcct, reportLines);
++        payeeInputFileType.setPersonService(oldPersonService);
++        setUpExistingPayeeAcct();        
++        
++        assertEquals("Invalid payee and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_EXISTING_MATCH);
++    }
++    
+     // compare new payee acct to an existing one, test existing acct updates
+     public void testComparePayeeAccts_testAll() throws Exception {
+-        payeeInputFileType.comparePayeeAccts(newPayeeAcct, existingPayeeAcct, reportLines);
++        personService = new MyPersonServiceWithPersonMatch();
++        payeeInputFileType.setPersonService(personService);
++        payeeInputFileType.comparePayeeAccts(newPayeeAcct, existingPayeeAcct, reportLines);       
+         
+         if (!newPayeeAcct.getBankRoutingNumber().equals(existingPayeeAcct.getBankRoutingNumber())) {
+             fail("Bank routing number not updated and it should have been.");
+@@ -242,10 +326,6 @@
+             fail("Bank account number not updated and it should have been.");
+         }
+         
+-        if (!newPayeeAcct.getPayeeName().equals(existingPayeeAcct.getPayeeName())) {
+-            fail("Payee name not updated and it should have been.");
+-        }
+-        
+         if (!newPayeeAcct.getPayeeEmailAddress().equals(existingPayeeAcct.getPayeeEmailAddress())) {
+             fail("Payee email address not updated and it should have been.");
+         }
+@@ -262,10 +342,11 @@
+             fail("Bank account type code not updated and it should have been.");
+         }
+         
++        payeeInputFileType.setPersonService(oldPersonService);
+         setUpExistingPayeeAcct();
+     }
+-     
+-    static class MyBusinessObjectServiceWithNonExistingRouting extends BusinessObjectServiceImpl {
++    
++    static class MyBusinessObjectServiceWithNonExistingRoutingNumber extends BusinessObjectServiceImpl {
+         
+         @SuppressWarnings("deprecation")
+         public PersistableBusinessObject findByPrimaryKey(Class someClass, Map fieldValues) {
+@@ -284,7 +365,7 @@
+         }        
+     }
+ 
+-    static class MyBusinessObjectServiceWithExistingRouting extends BusinessObjectServiceImpl {
++    static class MyBusinessObjectServiceWithExistingRoutingNumber extends BusinessObjectServiceImpl {
+         
+         @SuppressWarnings("deprecation")
+         public PersistableBusinessObject findByPrimaryKey(Class someClass, Map fieldValues) {
+@@ -303,4 +384,126 @@
+             }            
+         }        
+     }
++    
++    static class MyPersonServiceWithPersonMatch implements PersonService<Person> {
++        
++        public List<PersonImpl> findPeople(Map<String, String> criteria) {
++            List<PersonImpl> people = new ArrayList<PersonImpl>();
++            people.add(new PersonImpl("hlo", "E"));
++            return people;
++        }
++
++        public List findPeople(Map arg0, boolean arg1) {
++            return null;
++        }
++
++        public void flushPersonCaches() {
++        }
++
++        public Person getPerson(String arg0) {
++            return null;
++        }
++
++        public Person getPersonByEmployeeId(String arg0) {
++            return null;
++        }
++
++        public List getPersonByExternalIdentifier(String arg0, String arg1) {
++            return null;
++        }
++
++        public Person getPersonByPrincipalName(String arg0) {
++            return null;
++        }
++
++        public Class getPersonImplementationClass() {
++            return null;
++        }
++
++        public boolean hasPersonProperty(Class arg0, Map arg1) {
++            return false;
++        }
++
++        public Map resolvePrincipalNamesToPrincipalIds(BusinessObject arg0, Map arg1) {
++            return null;
++        }
++
++        public Person updatePersonIfNecessary(String arg0, Person arg1) {
++            return null;
++        }
++    }
++
++    static class MyPersonServiceWithNoPersonMatch implements PersonService<Person> {
++        
++        public List<PersonImpl> findPeople(Map<String, String> criteria) {
++            List<PersonImpl> people = new ArrayList<PersonImpl>();
++            return people;
++        }
++
++        public List findPeople(Map arg0, boolean arg1) {
++            return null;
++        }
++
++        public void flushPersonCaches() {
++        }
++
++        public Person getPerson(String arg0) {
++            return null;
++        }
++
++        public Person getPersonByEmployeeId(String arg0) {
++            return null;
++        }
++
++        public List getPersonByExternalIdentifier(String arg0, String arg1) {
++            return null;
++        }
++
++        public Person getPersonByPrincipalName(String arg0) {
++            return null;
++        }
++
++        public Class getPersonImplementationClass() {
++            return null;
++        }
++
++        public boolean hasPersonProperty(Class arg0, Map arg1) {
++            return false;
++        }
++
++        public Map resolvePrincipalNamesToPrincipalIds(BusinessObject arg0, Map arg1) {
++            return null;
++        }
++
++        public Person updatePersonIfNecessary(String arg0, Person arg1) {
++            return null;
++        }        
++    }
++    
++    static class MyGroupServiceWithMatchingPerson extends GroupServiceImpl {
++        
++        public boolean isMemberOfGroup(String principalId, String groupId) {
++            return true;
++        }
++    }
++    
++    static class MyGroupServiceWithNoMatchingPerson extends GroupServiceImpl {
++        
++        public boolean isMemberOfGroup(String principalId, String groupId) {
++            return false;
++        }
++    }
++    
++    static class MyParameterServiceWithGroupId extends ParameterServiceImpl {
++
++        // assign random value to parameter; only need definition so testValidatePayeeAcct_payeeInOverrideGroup() works
++        public String getParameterValue(Class componentClass, String parameterName) {
++            if (parameterName.equals(AZKFSConstants.ACHFileConstants.BANKING_INFORMATION_OVERRIDE_GROUP)) {
++                return "01";
++            }
++            else {
++                return "";
++            }
++        }
++    }
+ }
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 11129)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 11130)
+@@ -30,20 +30,24 @@
+ 
+ import org.apache.commons.lang.StringUtils;
+ import org.apache.log4j.Logger;
++import org.kuali.kfs.pdp.PdpConstants;
++import org.kuali.kfs.pdp.PdpPropertyConstants;
+ import org.kuali.kfs.pdp.businessobject.ACHBank;
+ import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
+-import org.kuali.kfs.sys.Message;
+ import org.kuali.kfs.sys.batch.BatchInputFileTypeBase;
+ import org.kuali.kfs.sys.businessobject.OriginationCode;
+ import org.kuali.kfs.sys.dataaccess.OriginationCodeDao;
+ import org.kuali.kfs.sys.exception.ParseException;
+-import org.kuali.kfs.sys.service.ReportWriterService;
++import org.kuali.rice.kim.bo.Person;
++import org.kuali.rice.kim.service.GroupService;
++import org.kuali.rice.kim.service.KIMServiceLocator;
++import org.kuali.rice.kim.service.PersonService;
++import org.kuali.rice.kim.util.KIMPropertyConstants;
+ import org.kuali.rice.kns.service.BusinessObjectService;
+ import org.kuali.rice.kns.service.DateTimeService;
++import org.kuali.rice.kns.service.ParameterService;
+ import org.kuali.rice.kns.util.ObjectUtils;
+ 
+-import edu.arizona.kfs.module.ld.service.FileHandler;
+-import edu.arizona.kfs.pdp.batch.AchBankInputFileType.BankReportLine;
+ import edu.arizona.kfs.pdp.util.PayeeACHAcctFlatFileConverter;
+ import edu.arizona.kfs.sys.AZKFSConstants;
+ import edu.arizona.kfs.sys.KFSKeyConstants;
+@@ -53,6 +57,9 @@
+     
+     private BusinessObjectService businessObjectService;
+     private DateTimeService dateTimeService;
++    private ParameterService parameterService;
++    private PersonService<Person> personService;
++    private GroupService groupService;
+     private OriginationCodeDao originationCodeDao;
+     private String reportPath;
+     private String reportPrefix;
+@@ -158,11 +165,20 @@
+      * 2. If there is no payee ID number supplied, reject record. 
+      * 3. Payee Email Address should be required as the email addresses will be used by the ACH Advice
+      *  Notification Job (pdpSendAchAdviceNotificationsJob). Reject record if no email address is supplied.
+-     * 4. If the Payee ACH Account exists for the employee or student in the Payee ACH Account table
++     * 4. If the bank account number is missing, reject record.
++     * 5. If the payee ID type is invalid (i.e. is not employee or entity), reject record.
++     * 6. If payee is a member of the ACH override group (defined in the BANKING_INFORMATION_OVERRIDE_GROUP parm
++     *  don't do anything except write message to audit report. 
++     * 7. If the Payee ACH Account exists for the employee or student in the Payee ACH Account table
+      *  compare the remainder of the provided file account information and update the row accordingly, 
+      *  including the active indicator.
+-     * 5. If the Payee ACH Account does not exist in the Payee ACH Account table for the
++     * 7a. Ignore payee name when doing this comparison and update.
++     * 7b. If no payee match is found (derived from payee id type and payee id number using Person service),
++     *  reject record.
++     * 8. If the Payee ACH Account does not exist in the Payee ACH Account table for the
+      *  associated payee, insert a row with the information in XML.
++     * 8a. If no payee name is provided, reject record.
++     * 8b. If no payee match is found (derived from payee id type and payee id number), reject record.
+      *  
+      * It also saves new or updated records into PDP_PAYEE_ACH_ACCT_T and saves reporting information,
+      *  if applicable.
+@@ -201,7 +217,18 @@
+         return payeeAccountList;
+     }
+     
++    /**
++     * This method does some existence checks to see if the payee should be rejected. It also calls helper
++     * methods to determine if it requires a new or modified record, and validates the data in the record.
++     * 
++     * @param currentPayeeAcct
++     * @param reportLines
++     * @param payeeAccountList
++     */
+     protected void processPayeeAcct(PayeeACHAccount currentPayeeAcct, List<PayeeReportLine> reportLines, List<PayeeACHAccount> payeeAccountList) {
++        List<String> validPayeeIDTypeCodes = new ArrayList<String>();
++        validPayeeIDTypeCodes.add(PdpConstants.PayeeIdTypeCodes.ENTITY);
++        validPayeeIDTypeCodes.add(PdpConstants.PayeeIdTypeCodes.EMPLOYEE);        
+         PayeeReportLine reportLine = new PayeeReportLine();
+         PayeeACHAccount existingPayeeAcct;
+         Boolean validChanges = false;
+@@ -219,16 +246,28 @@
+             reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
+             reportLines.add(reportLine);
+         }
++        else if (StringUtils.isBlank(currentPayeeAcct.getBankAccountNumber())) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR);
++            reportLines.add(reportLine);
++        }        
++        else if (StringUtils.isBlank(currentPayeeAcct.getPayeeIdentifierTypeCode()) || !validPayeeIDTypeCodes.contains(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR);
++            reportLines.add(reportLine);
++        }
++        else if (isPayeeInOverrideGroup(currentPayeeAcct)) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_OVERRIDE_EMPL_ERROR);
++            reportLines.add(reportLine);
++        }
+         else {
+             existingPayeeAcct = getPayeeACHAccount(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeIdentifierTypeCode());
+             if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
+                 savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+                 if (savePayeeAcct) {
+-                    // change message based on type                    
+-                    if ("T".equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    // change message based on type
++                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
+                     }
+-                    else if ("E".equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -246,10 +285,10 @@
+                 
+                 if (validChanges) {                            
+                     // change message based on type
+-                    if ("T".equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
+                     }
+-                    else if ("E".equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -272,7 +311,7 @@
+      */
+     private boolean existingRoutingNumber(String routingNumber) {
+         Map<String, String> pkMap = new HashMap<String, String>();
+-        pkMap.put("bankRoutingNumber", routingNumber);
++        pkMap.put(PdpPropertyConstants.BANK_ROUTING_NUMBER, routingNumber);
+         ACHBank bank = (ACHBank) businessObjectService.findByPrimaryKey(ACHBank.class, pkMap);
+         if (ObjectUtils.isNull(bank)) {
+             return false;
+@@ -286,17 +325,60 @@
+      *  
+      * @return Returns the matching PayeeACHAccount object, null if payeeIdNbr and/or payeeIdType is invalid.
+      */
+-    private PayeeACHAccount getPayeeACHAccount(String payeeIdNbr, String payeeIdType) {
+-                
++    private PayeeACHAccount getPayeeACHAccount(String payeeIdNbr, String payeeIdType) {                
+         Map<String, String> pkMap = new HashMap<String, String>();
+-        pkMap.put("payeeIdNumber", payeeIdNbr);
+-        pkMap.put("payeeIdentifierTypeCode", payeeIdType);
++        pkMap.put(PdpPropertyConstants.PAYEE_ID_NUMBER, payeeIdNbr);
++        pkMap.put(PdpPropertyConstants.PAYEE_IDENTIFIER_TYPE_CODE, payeeIdType);
+         PayeeACHAccount payeeACHAccount = (PayeeACHAccount) businessObjectService.findByPrimaryKey(PayeeACHAccount.class, pkMap);
+         
+         return payeeACHAccount;
+     }
+     
+     /**
++     * Uses the Person service to find a matching payee as a Person.
++     * 
++     * @param payeeIdNbr
++     * @param payeeIdType
++     * @return a matching Person if one exists; null otherwise
++     */
++    private Person getPersonFromPayeeInfo(String payeeIdNbr, String payeeIdType) {
++        Map<String, String> fieldsForLookup = new HashMap<String, String>();
++        
++        if (payeeIdType.equals(PdpConstants.PayeeIdTypeCodes.EMPLOYEE)) {
++            fieldsForLookup.put(KIMPropertyConstants.Person.EMPLOYEE_ID, payeeIdNbr);         
++        }
++        else {    // payee is an entity
++            fieldsForLookup.put(KIMPropertyConstants.Person.ENTITY_ID, payeeIdNbr);            
++        }
++
++        List<? extends Person> persons = personService.findPeople(fieldsForLookup);
++        if (persons.isEmpty()) {
++            return null;
++        }
++        else {
++            return persons.get(0);
++        }
++    }
++    
++    /**
++     * This method checks to see if payee is in override group, defined in the BANKING_INFORMATION_OVERRIDE_GROUP
++     * 
++     * @param currentPayeeAcct
++     * @return true if the payee is in the override group; false otherwise
++     */
++    private boolean isPayeeInOverrideGroup(PayeeACHAccount currentPayeeAcct) {
++        boolean inGroupFlag = false;
++        String groupId = parameterService.getParameterValue(edu.arizona.kfs.pdp.batch.LoadAchPayeeBankAcctStep.class, AZKFSConstants.ACHFileConstants.BANKING_INFORMATION_OVERRIDE_GROUP);
++        Person payee = getPersonFromPayeeInfo(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeIdentifierTypeCode());
++        
++        if (payee != null) {
++            inGroupFlag = getGroupService().isMemberOfGroup(payee.getPrincipalId(), groupId);
++        }        
++        
++        return inGroupFlag;
++    }
++    
++    /**
+      * This method compares the potentially new currentPayeeAcct to the existingPayeeAcct:
+      * If existingPayeeAcct has a different field value from currentPayeeAcct, update existingPayeeAcct.   
+      *  
+@@ -306,7 +388,9 @@
+      */
+     protected boolean comparePayeeAccts(PayeeACHAccount currentPayeeAcct, PayeeACHAccount existingPayeeAcct,
+             List<PayeeReportLine> reportLines) {
+-        boolean validAcct = true;
++        PayeeReportLine reportLine;
++        boolean payeeExists = true;
++        boolean validAcct = false;
+         boolean changesMade = false;
+         List<String> validPayeeIDTypeCodes = new ArrayList<String>();        
+         List<String> validAcctTypeCodes = new ArrayList<String>();
+@@ -323,32 +407,43 @@
+         String oldAchTransactionType;
+         String newAchTransactionType;                
+         String oldBankAccountTypeCode;
+-        String newBankAccountTypeCode;        
++        String newBankAccountTypeCode;
+         
+-        // check for valid changes in currentPayeeAcct
+-        validAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+-        
+-        // set up values for variables
+-        validPayeeIDTypeCodes.add("T");
+-        validPayeeIDTypeCodes.add("E");
+-        validAcctTypeCodes.add("22");
+-        validAcctTypeCodes.add("32");
++        // set up some of the variables needed
++        validPayeeIDTypeCodes.add(PdpConstants.PayeeIdTypeCodes.ENTITY);
++        validPayeeIDTypeCodes.add(PdpConstants.PayeeIdTypeCodes.EMPLOYEE);
++        validAcctTypeCodes.add(AZKFSConstants.ACHAcctTypeCodes.CHECKING);
++        validAcctTypeCodes.add(AZKFSConstants.ACHAcctTypeCodes.SAVINGS);
+         oldBankRoutingNumber = existingPayeeAcct.getBankRoutingNumber();
+-        newBankRoutingNumber = currentPayeeAcct.getBankRoutingNumber();
+         oldBankAccountNumber = existingPayeeAcct.getBankAccountNumber();
+-        newBankAccountNumber = currentPayeeAcct.getBankAccountNumber();
+         oldPayeeName = existingPayeeAcct.getPayeeName();
+-        newPayeeName = currentPayeeAcct.getPayeeName();
+         oldPayeeEmailAddr = existingPayeeAcct.getPayeeEmailAddress();
+-        newPayeeEmailAddr = currentPayeeAcct.getPayeeEmailAddress();
+         oldPayeeIdTypeCode = existingPayeeAcct.getPayeeIdentifierTypeCode();
+-        newPayeeIdTypeCode = currentPayeeAcct.getPayeeIdentifierTypeCode();
+         oldAchTransactionType = existingPayeeAcct.getAchTransactionType();
+-        newAchTransactionType = currentPayeeAcct.getAchTransactionType();                
+         oldBankAccountTypeCode = existingPayeeAcct.getBankAccountTypeCode();
+-        newBankAccountTypeCode = currentPayeeAcct.getBankAccountTypeCode();        
+         
++        // Check to see if the payee update is a valid Person; if no match, don't update
++        Person payee = getPersonFromPayeeInfo(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeIdentifierTypeCode());
++        if (payee == null) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_EXISTING_MATCH);
++            reportLines.add(reportLine);
++            payeeExists = false;
++        }
+         
++        // check for valid changes in currentPayeeAcct
++        if (payeeExists) {
++            validAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
++        }
++
++        // set up values for variables after validation in case of change
++        newBankRoutingNumber = currentPayeeAcct.getBankRoutingNumber();
++        newBankAccountNumber = currentPayeeAcct.getBankAccountNumber();        
++        newPayeeName = currentPayeeAcct.getPayeeName();        
++        newPayeeEmailAddr = currentPayeeAcct.getPayeeEmailAddress();        
++        newPayeeIdTypeCode = currentPayeeAcct.getPayeeIdentifierTypeCode();        
++        newAchTransactionType = currentPayeeAcct.getAchTransactionType();
++        newBankAccountTypeCode = currentPayeeAcct.getBankAccountTypeCode();
++        
+         if (validAcct) {    // update existingPayeeAcct appropriately
+             // check routing number
+             if (StringUtils.isNotBlank(newBankRoutingNumber) && !newBankRoutingNumber.equals(oldBankRoutingNumber)) {
+@@ -362,12 +457,6 @@
+                 changesMade = true;
+             }
+             
+-            // check payee name
+-            if (StringUtils.isNotBlank(newPayeeName) && !newPayeeName.equals(oldPayeeName)) {
+-                existingPayeeAcct.setPayeeName(newPayeeName);
+-                changesMade = true;
+-            }
+-            
+             // check payee email address
+             if (StringUtils.isNotBlank(newPayeeEmailAddr) && !newPayeeEmailAddr.equals(oldPayeeEmailAddr)) {
+                 existingPayeeAcct.setPayeeEmailAddress(newPayeeEmailAddr);
+@@ -408,42 +497,36 @@
+     protected boolean validatePayeeAcct(PayeeACHAccount payeeAcct, List<PayeeReportLine> reportLines) {
+         PayeeReportLine reportLine;
+         boolean validAcct = true;
+-        List<String> validPayeeIDTypeCodes = new ArrayList<String>();
+-        validPayeeIDTypeCodes.add("T");
+-        validPayeeIDTypeCodes.add("E");
+         List<String> validAcctTypeCodes = new ArrayList<String>();
+-        validAcctTypeCodes.add("22");
+-        validAcctTypeCodes.add("32");
++        validAcctTypeCodes.add(AZKFSConstants.ACHAcctTypeCodes.CHECKING);
++        validAcctTypeCodes.add(AZKFSConstants.ACHAcctTypeCodes.SAVINGS);
+         String bankRoutingNumber = payeeAcct.getBankRoutingNumber();
+-        String bankAcctNumber = payeeAcct.getBankAccountNumber();
+         String payeeName = payeeAcct.getPayeeName();
+         String payeeEmailAddr = payeeAcct.getPayeeEmailAddress();
++        String payeeIdNumber = payeeAcct.getPayeeIdNumber();        
+         String payeeIdTypeCode = payeeAcct.getPayeeIdentifierTypeCode();
+         String achTransactionType = payeeAcct.getAchTransactionType();       
+         String bankAcctTypeCode = payeeAcct.getBankAccountTypeCode();        
+         
+         // check routing number
+         if (StringUtils.isBlank(bankRoutingNumber)) {
+-            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR);
++            reportLine = new PayeeReportLine(payeeIdNumber, payeeName, AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR);
+             reportLines.add(reportLine);
+         }
+         
+-        // check bank account number
+-        if (StringUtils.isBlank(bankAcctNumber)) {
+-            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR);
+-            reportLines.add(reportLine);
+-        }
+-        
+-        // check payee name
++        // check payee name; return false (i.e. reject record) if blank
+         if (StringUtils.isBlank(payeeName)) {
+-            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR);
++            reportLine = new PayeeReportLine(payeeIdNumber, payeeName, AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR);
+             reportLines.add(reportLine);
++            validAcct = false;
+         }
+-                
+-        // check payee id type code
+-        if (StringUtils.isBlank(payeeIdTypeCode) || !validPayeeIDTypeCodes.contains(payeeIdTypeCode)) {
+-            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR);
++
++        // use Person service to derive payee name; return false (i.e. reject record) if no match
++        Person payee = getPersonFromPayeeInfo(payeeIdNumber, payeeIdTypeCode);
++        if (payee == null) {
++            reportLine = new PayeeReportLine(payeeIdNumber, payeeName, AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_NO_NAME_MATCH);
+             reportLines.add(reportLine);
++            validAcct = false;
+         }
+         
+         // check ACH transaction type
+@@ -451,14 +534,14 @@
+             payeeAcct.setAchTransactionType("ACH");
+         }
+         
+-        //  check bank acct type
++        //  check bank acct type; return false (i.e. reject record) if blank
+         if (StringUtils.isBlank(bankAcctTypeCode)) {
+-            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR);
++            reportLine = new PayeeReportLine(payeeIdNumber, payeeName, AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR);
+             reportLines.add(reportLine);
+             validAcct = false;
+         }
+         else if (!validAcctTypeCodes.contains(bankAcctTypeCode)) {
+-            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR);
++            reportLine = new PayeeReportLine(payeeIdNumber, payeeName, AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR);
+             reportLines.add(reportLine);            
+         }
+                 
+@@ -626,6 +709,64 @@
+     }
+     
+     /**
++     * Gets the parameterService attribute. 
++     * @return Returns the parameterService.
++     */
++    public ParameterService getParameterService() {
++        return this.parameterService;
++    }
++
++    /**
++     * Sets the parameterService attribute value.
++     * @param parameterService The parameterService to set.
++     */
++    public void setParameterService(ParameterService parameterService) {
++        this.parameterService = parameterService;
++    }
++
++    /**
++     * Gets the personService attribute. 
++     * @return Returns the personService.
++     */
++    public PersonService<Person> getPersonService() {
++        return this.personService;
++    }
++
++    /**
++     * @param personService The personService to set.
++     */
++    public void setPersonService(PersonService<Person> personService) {
++        this.personService = personService;
++    }    
++    
++    /**
++     * Gets the groupService attribute. 
++     * @return Returns the groupService.
++     */
++    public GroupService getGroupService() {
++        if (groupService == null) {
++            this.groupService = KIMServiceLocator.getGroupService();
++        }
++
++        return this.groupService;
++    }
++
++    /**
++     * Sets the groupService attribute value.
++     * Because there are errors setting this through spring, it can't be injected. 
++     * It allows for a groupService to be set directly (helpful for junit testing), or by default with the KimServiceLocator. 
++     * @param groupService The groupService to set.
++     */
++    public void setGroupService(GroupService groupService) {
++        if (groupService == null) {
++            this.groupService = KIMServiceLocator.getGroupService();
++        }
++        else {
++            this.groupService = groupService;
++        }
++    }
++
++    /**
+      * Sets the originationCodeDao attribute value.
+      * @param originationCodeDao The originationCodeDao to set.
+      */
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 11129)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 11130)
+@@ -30,6 +30,7 @@
+ 
+ import org.apache.commons.lang.StringUtils;
+ import org.apache.log4j.Logger;
++import org.kuali.kfs.pdp.PdpPropertyConstants;
+ import org.kuali.kfs.pdp.businessobject.ACHBank;
+ import org.kuali.kfs.sys.Message;
+ import org.kuali.kfs.sys.batch.BatchInputFileTypeBase;
+@@ -214,7 +215,7 @@
+     private ACHBank getAchBank(String bankRoutingNumber) {
+                 
+         Map<String, String> pkMap = new HashMap<String, String>();
+-        pkMap.put("bankRoutingNumber", bankRoutingNumber);
++        pkMap.put(PdpPropertyConstants.BANK_ROUTING_NUMBER, bankRoutingNumber);
+         ACHBank bank = (ACHBank) businessObjectService.findByPrimaryKey(ACHBank.class, pkMap);
+         
+         return bank;
+@@ -244,12 +245,12 @@
+         String bankInstitutionStatusCd = bank.getBankInstitutionStatusCode();
+         String bankDataViewCd = bank.getBankDataViewCode();
+         List<String> validOfficeCodes = new ArrayList<String>();
+-        validOfficeCodes.add("O");
+-        validOfficeCodes.add("B");
++        validOfficeCodes.add(AZKFSConstants.ACHBankOfficeCodes.MAIN);
++        validOfficeCodes.add(AZKFSConstants.ACHBankOfficeCodes.BRANCH);
+         List<String> validTypeCodes = new ArrayList<String>();
+-        validTypeCodes.add("0");
+-        validTypeCodes.add("1");
+-        validTypeCodes.add("2");
++        validTypeCodes.add(AZKFSConstants.ACHBankTypeCodes.FEDERAL_RESERVE);
++        validTypeCodes.add(AZKFSConstants.ACHBankTypeCodes.CUSTOMER_ROUTING_NBR);
++        validTypeCodes.add(AZKFSConstants.ACHBankTypeCodes.NEW_CUSTOMER_ROUTING_NBR);
+         
+         // check customer name, return false if not present
+         if (StringUtils.isBlank(bankNm)) {
+@@ -266,20 +267,20 @@
+         
+         // check record type code
+         if (StringUtils.isBlank(bankTypeCd)) {    // if no record type code
+-            bank.setBankTypeCode("0");
++            bank.setBankTypeCode(AZKFSConstants.ACHBankTypeCodes.FEDERAL_RESERVE);
+         }
+         else if (!validTypeCodes.contains(bankTypeCd)) {    // if an invalid code
+-            bank.setBankTypeCode("0");
++            bank.setBankTypeCode(AZKFSConstants.ACHBankTypeCodes.FEDERAL_RESERVE);
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_TYP_CD_ERROR));
+         }
+-        else if (bankTypeCd.equals("2") && (StringUtils.isBlank(bankNewRoutingNbr))) {    // if no new routing number
++        else if (bankTypeCd.equals(AZKFSConstants.ACHBankTypeCodes.NEW_CUSTOMER_ROUTING_NBR) && (StringUtils.isBlank(bankNewRoutingNbr))) {    // if no new routing number
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR));
+             return false;
+         }
+         
+         // check office code
+         if (StringUtils.isBlank(bankOfficeCd) || !validOfficeCodes.contains(bankOfficeCd)) {
+-            bank.setBankOfficeCode("O");
++            bank.setBankOfficeCode(AZKFSConstants.ACHBankOfficeCodes.MAIN);
+             reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_OFFICE_CD_ERROR));
+         }
+                 
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 11129)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 11130)
+@@ -283,9 +283,15 @@
+ 	    <property name="dateTimeService">
+ 	       <ref bean="dateTimeService"/>
+ 	    </property>
++		<property name="parameterService">
++			<ref bean="parameterService" />
++		</property>
++		<property name="personService">
++			<ref bean="personService" />
++		</property>
+  		<property name="originationCodeDao">
+ 			<ref bean="originationCodeDao" />
+-		</property>	     
++		</property>
+ 	</bean>
+ 	
+ 	<bean id="shippingInvoiceDao" parent="platformAwareDao" class="edu.arizona.kfs.pdp.dataaccess.impl.ShippingInvoiceDaoOjb" />		
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 11129)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 11130)
+@@ -77,9 +77,30 @@
+         public static final String ACH_PAYEE_ACCT_MISSING_EMAIL = "Payee email address not provided - record not loaded";
+         public static final String ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR = "Routing number not provided";
+         public static final String ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR = "Account number not provided";
+-        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided";
++        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided - record not loaded";
+         public static final String ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR = "Invalid payee ID type";
+         public static final String ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR = "Bank account type not provided - record not loaded";
+-        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";        
++        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";
++        public static final String ACH_PAYEE_ACCT_OVERRIDE_EMPL_ERROR = "Employee exists in override group - no update occurred";
++        public static final String ACH_PAYEE_ACCT_NO_NAME_MATCH = "No matching payee for payee ID/type found - record not loaded";
++        public static final String ACH_PAYEE_ACCT_INVALID_EXISTING_MATCH = "Invalid payee ID/type found, but record exists in ACH setup - no updates occurred";
++        
++        public static final String BANKING_INFORMATION_OVERRIDE_GROUP = "BANKING_INFORMATION_OVERRIDE_GROUP";
+     }
++    
++    public static final class ACHAcctTypeCodes {
++        public static String CHECKING = "22";
++        public static String SAVINGS = "32";
++    }
++    
++    public static final class ACHBankOfficeCodes {
++        public static String MAIN = "O";
++        public static String BRANCH = "B";
++    }
++    
++    public static final class ACHBankTypeCodes {
++        public static String FEDERAL_RESERVE = "0";
++        public static String CUSTOMER_ROUTING_NBR = "1";
++        public static String NEW_CUSTOMER_ROUTING_NBR = "2";
++    }
+ }

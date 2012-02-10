@@ -1,0 +1,20 @@
+Index: financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 10273)
++++ financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 10274)
+@@ -39,7 +39,6 @@
+     protected AchPayeeBankAcctInputFileType payeeInputFileType;
+     protected List<PayeeReportLine> reportLines;
+     protected List<PayeeACHAccount> payeeAccountList;
+-//    protected AchPayeeBankAcctInputFileType achPayeeBankAcctInputFileType;
+     protected BusinessObjectService oldBusinessObjectService;
+     protected BusinessObjectService boService;
+     
+@@ -50,7 +49,6 @@
+         payeeAccountList = new ArrayList<PayeeACHAccount>();
+         setUpNewPayeeAcct();
+         setUpExistingPayeeAcct();
+-//        achPayeeBankAcctInputFileType = SpringContext.getBean(AchPayeeBankAcctInputFileType.class);
+         oldBusinessObjectService = payeeInputFileType.getBusinessObjectService();
+     }
+     

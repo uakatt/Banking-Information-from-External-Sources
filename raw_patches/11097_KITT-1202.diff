@@ -1,0 +1,59 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 11096)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 11097)
+@@ -263,11 +263,11 @@
+             if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
+                 savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+                 if (savePayeeAcct) {
+-                    // change message based on type                    
+-                    if ("T".equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    // change message based on type
++                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
+                     }
+-                    else if ("E".equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -285,10 +285,10 @@
+                 
+                 if (validChanges) {                            
+                     // change message based on type
+-                    if ("T".equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
+                     }
+-                    else if ("E".equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -345,11 +345,9 @@
+         Map<String, String> fieldsForLookup = new HashMap<String, String>();
+         
+         if (payeeIdType.equals(PdpConstants.PayeeIdTypeCodes.EMPLOYEE)) {
+-            fieldsForLookup.put(KIMPropertyConstants.Person.AFFILIATION_TYPE_CODE, payeeIdType);
+             fieldsForLookup.put(KIMPropertyConstants.Person.EMPLOYEE_ID, payeeIdNbr);         
+         }
+         else {    // payee is an entity
+-            fieldsForLookup.put(KIMPropertyConstants.Person.AFFILIATION_TYPE_CODE, payeeIdType);
+             fieldsForLookup.put(KIMPropertyConstants.Person.ENTITY_ID, payeeIdNbr);            
+         }
+ 
+@@ -747,11 +745,10 @@
+      */
+     public GroupService getGroupService() {
+         if (groupService == null) {
+-            return KIMServiceLocator.getGroupService();
++            this.groupService = KIMServiceLocator.getGroupService();
+         }
+-        else {
+-            return this.groupService;
+-        }            
++
++        return this.groupService;
+     }
+ 
+     /**

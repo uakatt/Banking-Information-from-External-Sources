@@ -1,0 +1,13 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 9943)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 9944)
+@@ -25,7 +25,7 @@
+ import org.kuali.kfs.sys.batch.service.BatchInputFileService;
+ import org.kuali.kfs.sys.exception.ParseException;
+ 
+-public class PayeeAchAccountServiceImpl extends org.kuali.kfs.pdp.service.impl.PayeeAchAccountServiceImpl {
++public class PayeeAchAccountServiceImpl extends org.kuali.kfs.pdp.service.impl.PayeeAchAccountServiceImpl implements edu.arizona.kfs.pdp.service.PayeeAchAccountService {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(PayeeAchAccountServiceImpl.class);
+     
+     private BatchInputFileService batchInputFileService;

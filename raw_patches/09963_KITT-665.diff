@@ -1,0 +1,87 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/PayeeACHAccount.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/PayeeACHAccount.java	(revision 9962)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/PayeeACHAccount.java	(revision 9963)
+@@ -1,82 +0,0 @@
+-/*
+- * Copyright 2010 The Kuali Foundation.
+- * 
+- * Licensed under the Educational Community License, Version 1.0 (the "License");
+- * you may not use this file except in compliance with the License.
+- * You may obtain a copy of the License at
+- * 
+- * http://www.opensource.org/licenses/ecl1.php
+- * 
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-package edu.arizona.kfs.pdp.businessobject;
+-
+-import org.kuali.kfs.pdp.businessobject.ACHBank;
+-import org.kuali.kfs.pdp.businessobject.ACHPayee;
+-import org.kuali.kfs.pdp.businessobject.ACHTransactionType;
+-import org.kuali.rice.kns.util.KualiInteger;
+-
+-public class PayeeACHAccount extends org.kuali.kfs.pdp.businessobject.PayeeACHAccount {
+-    
+-    /**
+-     * Default constructor.
+-     */
+-    public PayeeACHAccount() {
+-        super();
+-    }
+-    
+-    /** 
+-     * This method assumes the Payee Account Information File Format.
+-     * Routing Number  9  1-9  The institution's routing number
+-     * Account Number  255  10-264  The payee’s bank account number
+-     * Payee Name  123  265-387  The name of the payee
+-     * Payee Email Address  43  388-430  The main or default email address of the payee
+-     * Payee ID Type  1  431  The type of ID number provided or established
+-     * T = Entity ID
+-     * E = Employee ID
+-     * V = Vendor ID
+-     * ACH Transaction Type  4  432-435  Date of last change to CRF information (MMDDYY)
+-     * Active Indicator  1  436  The status of the payee record
+-     * Bank Account Type  2  437-438  Type of account
+-     * 22 = Checking
+-     * 32 = Savings
+-     * Payee ID Number  40  439-478  The number used to reference the payee from the source system
+-     * System Source  2  479-480 
+-     * 
+-     * @param fileLine
+-     */
+-    public void createPayeeACHAccount(String fileLine) {
+-        String active = "";
+-        setBankRoutingNumber(getField(fileLine, 1, 9));
+-        setBankAccountNumber(getField(fileLine, 10, 265));
+-        setPayeeName(getField(fileLine, 265, 123));
+-        setPayeeEmailAddress(getField(fileLine, 388, 43));
+-        setPayeeIdentifierTypeCode(getField(fileLine, 431, 1));
+-        setAchTransactionType(getField(fileLine, 432, 4));
+-        active = getField(fileLine, 436, 1);
+-        if (active == null || active.equals("") || active.equals("Y")) {
+-            setActive(true);
+-        }
+-        else {
+-            setActive(false);
+-        }
+-        setBankAccountTypeCode(getField(fileLine, 437, 2));
+-        setPayeeIdNumber(getField(fileLine, 439, 40));        
+-    }
+-    
+-    /**
+-     * This method returns the substring of the data.
+-     * 
+-     * @param data
+-     * @param startChar
+-     * @param length
+-     * @return
+-     */
+-    private String getField(String data, int startChar, int length) {
+-        return data.substring(startChar - 1, startChar + length - 1).trim();
+-    }
+-}

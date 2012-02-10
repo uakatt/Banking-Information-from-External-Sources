@@ -1,0 +1,145 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 9911)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 9912)
+@@ -100,11 +100,11 @@
+         Boolean saveBank = true;
+         BufferedReader bufferedFileReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileByteContent)));
+         String fileLine;
+-
+-        // need to get system source, use do/while to get it?
+-//        achReportWriterService.writeSubTitle("System Source: " + systemSource);
+         
+         try {
++            // need to get system source, use do/while to get it?
++//          achReportWriterService.writeSubTitle("System Source: " + systemSource);
++            
+             while ((fileLine = bufferedFileReader.readLine()) != null) {
+                 LOG.info("Bank line: " + fileLine);
+                 
+@@ -158,9 +158,18 @@
+     private Boolean validateBank(ACHBank bank, List<Message> reportMessages) {
+         String bankRoutingNbr = bank.getBankRoutingNumber();
+         String bankOfficeCd = bank.getBankOfficeCode();
++        String bankTypeCd = bank.getBankTypeCode();
+         String bankNewRoutingNbr = bank.getBankNewRoutingNumber();
+-        String bankTypeCode = bank.getBankTypeCode();
+-        String bankName = bank.getBankName();
++        String bankNm = bank.getBankName();
++        String bankAddr = bank.getBankStreetAddress();
++        String bankCity = bank.getBankCityName();
++        String bankSt = bank.getBankStateCode();
++        String bankZipCd = bank.getBankZipCode();
++        String bankPhoneAreaCd = bank.getBankPhoneAreaCode();
++        String bankPhonePrefixNbr = bank.getBankPhonePrefixNumber();
++        String bankPhoneSuffixNbr = bank.getBankPhoneSuffixNumber();
++        String bankInstitutionStatusCd = bank.getBankInstitutionStatusCode();
++        String bankDataViewCd = bank.getBankDataViewCode();
+         List<String> validOfficeCodes = new ArrayList<String>();
+         validOfficeCodes.add("O");
+         validOfficeCodes.add("B");
+@@ -170,58 +179,85 @@
+         validTypeCodes.add("2");
+         ACHBank errorBank = new ACHBank();
+         errorBank.setBankRoutingNumber(bankRoutingNbr);
+-        errorBank.setBankName(bankName);
++        errorBank.setBankName(bankNm);
+                 
+         // check office code
+         if (bankOfficeCd == null || !validOfficeCodes.contains(bankOfficeCd)) {
+             bank.setBankOfficeCode("O");
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_INVALID_OFFICE_CD_ERROR, Message.TYPE_WARNING));
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_OFFICE_CD_ERROR, Message.TYPE_WARNING));
+  //           achReportWriterService.writeError(errorBank, reportMessages);
+         }
+         
+         // check record type code
+-        if (bankTypeCode == null || bankTypeCode.equals("")) {    // if no record type code
++        if (bankTypeCd == null || bankTypeCd.equals("")) {    // if no record type code
+             bank.setBankTypeCode("0");
+         }
+-        else if (!validTypeCodes.contains(bankTypeCode)) {    // if an invalid code
++        else if (!validTypeCodes.contains(bankTypeCd)) {    // if an invalid code
+             bank.setBankTypeCode("0");
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_INVALID_BANK_TYP_CD_ERROR, Message.TYPE_WARNING));
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_TYP_CD_ERROR, Message.TYPE_WARNING));
+  //           achReportWriterService.writeError(errorBank, reportMessages);
+         }
+-        else if (bankTypeCode.equals("2") && (bankNewRoutingNbr == null || bankNewRoutingNbr.equals(""))) {    // if no new routing number
++        else if (bankTypeCd.equals("2") && (bankNewRoutingNbr == null || bankNewRoutingNbr.equals(""))) {    // if no new routing number
+             reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR, Message.TYPE_WARNING));
+    //         achReportWriterService.writeError(errorBank, reportMessages);
+             return false;
+         }
+         
+-        // remove change date
+-        
+         // check new routing number
++        if (bankNewRoutingNbr == null || bankNewRoutingNbr.equals("")) {
++            bank.setBankNewRoutingNumber("000000000");
++        }
+         
+         // check customer name, return false if not present
++        if (bankNm == null || bankNm.equals("")) {
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_MISSING_NM_ERROR, Message.TYPE_WARNING));
++ //         achReportWriterService.writeError(errorBank, reportMessages);
++            return false; 
++        }
+         
+         // check address, return false if not present
+-        
+-        // check city, return false if not present
+-        
+-        // check state, return false if not present
+-        
+-        // check zipcode, return false if not present
+-        
+-        // remove zipcode extension
+-        
++        if (bankAddr == null || bankAddr.equals("") || bankCity == null || bankCity.equals("") || bankSt == null || bankSt.equals("")
++             || bankZipCd == null || bankZipCd.equals("")) {
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR, Message.TYPE_WARNING));
++ //         achReportWriterService.writeError(errorBank, reportMessages);
++            return false;            
++        }
++                
+         // check area code
++        if (bankPhoneAreaCd == null || bankPhoneAreaCd.equals("")) {
++            bank.setBankPhoneAreaCode("000");
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR, Message.TYPE_WARNING));
++            // achReportWriterService.writeError(errorBank, reportMessages);
++        }
+         
+         // check phone number prefix
++        if (bankPhonePrefixNbr == null || bankPhonePrefixNbr.equals("")) {
++            bank.setBankPhonePrefixNumber("000");
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR, Message.TYPE_WARNING));
++            // achReportWriterService.writeError(errorBank, reportMessages);
++        }
+         
+         // check phone number suffix
++        if (bankPhoneSuffixNbr == null || bankPhoneSuffixNbr.equals("")) {
++            bank.setBankPhoneSuffixNumber("0000");
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR, Message.TYPE_WARNING));
++            // achReportWriterService.writeError(errorBank, reportMessages);
++        }
+         
+         // check institution status code
++        if (bankInstitutionStatusCd == null || bankInstitutionStatusCd.equals("")) {
++            bank.setBankInstitutionStatusCode("1");
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_INST_STAT_CD, Message.TYPE_WARNING));
++            // achReportWriterService.writeError(errorBank, reportMessages);
++        }
+         
+         // check data view code
++        if (bankDataViewCd == null || bankDataViewCd.equals("")) {
++            bank.setBankDataViewCode("1");
++            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_DATA_VIEW_CD, Message.TYPE_WARNING));
++            // achReportWriterService.writeError(errorBank, reportMessages);
++        }
+         
+-        
+-        
+         return true;
+     }
+ 

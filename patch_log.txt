@@ -1,0 +1,455 @@
+------------------------------------------------------------------------
+r9840 | hlo | 2010-05-12 17:39:27 -0700 (Wed, 12 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/AchBankService.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+
+KITT-665 Initial check-in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9841 | hlo | 2010-05-12 17:42:14 -0700 (Wed, 12 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+
+KITT-665 Adding beans for pdpLoadBankDataJob.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9842 | hlo | 2010-05-12 17:42:39 -0700 (Wed, 12 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
+
+KITT-665 Adding constants.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9843 | hlo | 2010-05-12 17:43:44 -0700 (Wed, 12 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java
+
+KITT-665 Adding exception to remove functionality.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9894 | hlo | 2010-05-14 17:34:38 -0700 (Fri, 14 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchReportsStep.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+
+KITT-665 Code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9895 | hlo | 2010-05-14 17:36:46 -0700 (Fri, 14 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+
+KITT-665 Adding ACHFileConstants.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9912 | hlo | 2010-05-17 00:51:34 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+
+KITT-665 Modifying ACHFileConstants
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9913 | hlo | 2010-05-17 01:42:39 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-665 Code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9914 | hlo | 2010-05-17 01:43:01 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+
+KITT-665 Adding ACHFileConstants.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9942 | hlo | 2010-05-17 18:45:36 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achBanks
+   A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achPayeeBankAccounts
+
+KITT-665 Initial check-in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9943 | hlo | 2010-05-17 18:46:35 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/PayeeACHAccount.java
+
+KITT-665 Initial check-in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9944 | hlo | 2010-05-17 18:47:25 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+
+KITT-665 Added implements declaration to fix server startup error.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9945 | hlo | 2010-05-17 18:48:01 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+
+KITT-665 Uncommented functionality.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9946 | hlo | 2010-05-17 18:48:14 -0700 (Mon, 17 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-665 Code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9963 | hlo | 2010-05-18 13:39:05 -0700 (Tue, 18 May 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/businessobject/PayeeACHAccount.java
+
+KITT-665 Removing class; moved it to PayeeACHAcctFlatFileConverter instead.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9976 | hlo | 2010-05-19 15:39:28 -0700 (Wed, 19 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achBanks
+   A /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achPayeeBankAccounts
+
+KITT-665 Initial check-in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9979 | hlo | 2010-05-19 17:45:18 -0700 (Wed, 19 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+
+KITT-665 Code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9997 | hlo | 2010-05-19 17:46:04 -0700 (Wed, 19 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+
+KITT-665 Adding Transactional annotation.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r9998 | hlo | 2010-05-19 17:46:21 -0700 (Wed, 19 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+
+KITT-665 Code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10056 | hlo | 2010-05-21 18:32:07 -0700 (Fri, 21 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-665 Code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10057 | hlo | 2010-05-21 18:33:31 -0700 (Fri, 21 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+
+KITT-665 Adding property for originationCodeDao.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10058 | hlo | 2010-05-21 18:33:54 -0700 (Fri, 21 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+
+KITT-665 Adding more constants.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10060 | hlo | 2010-05-24 11:09:31 -0700 (Mon, 24 May 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achBanks
+   D /financial-system/kfs/branches/mod-hlo/build/external/work/reports/pdp/achPayeeBankAccounts
+
+KITT-665 Removing subfolders.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10079 | hlo | 2010-05-24 18:32:48 -0700 (Mon, 24 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+
+KITT-665 Cleaned up code.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10080 | hlo | 2010-05-24 18:33:17 -0700 (Mon, 24 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-665 Minor reporting code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10081 | hlo | 2010-05-24 18:33:52 -0700 (Mon, 24 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+
+KITT-665 Cleaned up code.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10082 | hlo | 2010-05-24 18:34:12 -0700 (Mon, 24 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+
+KITT-665 Split batch job into two.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10083 | hlo | 2010-05-24 18:34:30 -0700 (Mon, 24 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/util
+   A /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java
+
+KITT-665 Initial check in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10110 | hlo | 2010-05-26 17:45:22 -0700 (Wed, 26 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/util
+   A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java
+
+KITT-665 Initial check in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10127 | hlo | 2010-05-26 17:48:54 -0700 (Wed, 26 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch
+   A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
+
+KITT-665 Initial check in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10157 | hlo | 2010-05-27 14:13:54 -0700 (Thu, 27 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
+
+KITT-665 Added more test methods.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10160 | hlo | 2010-05-27 14:32:31 -0700 (Thu, 27 May 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
+
+KITT-665 Removed extraneous set up method.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10179 | hlo | 2010-05-27 17:34:05 -0700 (Thu, 27 May 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+
+KITT-665 Initial check in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10272 | hlo | 2010-06-01 17:47:59 -0700 (Tue, 01 Jun 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+
+KITT-665 Added more test methods.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10274 | hlo | 2010-06-02 14:05:10 -0700 (Wed, 02 Jun 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+
+KITT-665 More coding.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10275 | hlo | 2010-06-02 14:06:00 -0700 (Wed, 02 Jun 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+
+KITT-665 Cleaning up code.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10276 | hlo | 2010-06-02 14:07:07 -0700 (Wed, 02 Jun 2010) | 1 line
+Changed paths:
+   D /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchReportsStep.java
+
+KITT-665 Removing out-dated code.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10299 | hlo | 2010-06-03 14:49:17 -0700 (Thu, 03 Jun 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/trunk/build/external/work/staging/pdp/achBanks
+   A /financial-system/kfs/trunk/build/external/work/staging/pdp/achBanks/placeholder.txt
+   A /financial-system/kfs/trunk/build/external/work/staging/pdp/achPayeeBankAccounts
+   A /financial-system/kfs/trunk/build/external/work/staging/pdp/achPayeeBankAccounts/placeholder.txt
+
+KITT-665 Merging with branch.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10300 | hlo | 2010-06-03 14:52:20 -0700 (Thu, 03 Jun 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achBanks/placeholder.txt
+   A /financial-system/kfs/branches/mod-hlo/build/external/work/staging/pdp/achPayeeBankAccounts/placeholder.txt
+
+KITT-665 Initial check in.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10301 | hlo | 2010-06-03 14:55:14 -0700 (Thu, 03 Jun 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util
+   A /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
+   M /financial-system/kfs/trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java
+
+KITT-665 Merging branch changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10302 | hlo | 2010-06-03 14:58:12 -0700 (Thu, 03 Jun 2010) | 1 line
+Changed paths:
+   A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch
+   A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
+   A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+   A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/util
+   A /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java
+
+KITT-665 Merging branch changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10420 | hlo | 2010-06-10 17:06:00 -0700 (Thu, 10 Jun 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+
+KITT-665 Minor changes after code review.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10423 | hlo | 2010-06-10 17:32:38 -0700 (Thu, 10 Jun 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+
+KITT-665 Cleaning up code.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10442 | hlo | 2010-06-11 09:14:52 -0700 (Fri, 11 Jun 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+
+KITT-665 Merging code after code review.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10965 | hlo | 2010-07-07 17:43:57 -0700 (Wed, 07 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+
+KITT-1202 Adding new ACH constants.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10966 | hlo | 2010-07-07 17:45:22 -0700 (Wed, 07 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+
+KITT-1202 Using new ACH constants.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r10971 | hlo | 2010-07-07 17:47:03 -0700 (Wed, 07 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-1202 Adding code for new business rules.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11086 | hlo | 2010-07-12 19:34:08 -0700 (Mon, 12 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-1202 Coding changes because of junit test and another testing.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11087 | hlo | 2010-07-12 19:34:30 -0700 (Mon, 12 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+
+KITT-1202 Added more tests.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11091 | hlo | 2010-07-13 10:29:54 -0700 (Tue, 13 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+
+KITT-1202 Added more services to inject.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11092 | hlo | 2010-07-13 10:34:55 -0700 (Tue, 13 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+
+KITT-1202 Added more constants.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11097 | hlo | 2010-07-13 17:18:59 -0700 (Tue, 13 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-1202 Made changes after code review.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r11130 | hlo | 2010-07-14 11:20:35 -0700 (Wed, 14 Jul 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+
+KITT-1202 Merging code changes.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r12268 | hlo | 2010-08-20 17:32:09 -0700 (Fri, 20 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+
+KITT-1202 Changes after functional testing.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r12269 | hlo | 2010-08-20 17:35:19 -0700 (Fri, 20 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+
+KITT-1202 Cleaning up code.
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+r12399 | hlo | 2010-08-25 10:35:39 -0700 (Wed, 25 Aug 2010) | 1 line
+Changed paths:
+   M /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+   M /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+
+KITT-1202 Changing equals to equalsIgnoreCase.
+------------------------------------------------------------------------

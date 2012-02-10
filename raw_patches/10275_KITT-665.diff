@@ -1,0 +1,453 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 10274)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 10275)
+@@ -54,23 +54,21 @@
+         List<String> fileNamesToLoad = batchInputFileService.listInputFileNamesWithDoneFile(achBankInputFileType);
+         boolean processSuccess = true;
+         List<String> processedFiles = new ArrayList();
+-        List<String> failedFiles = new ArrayList<String>();
+         
+         for (String inputFileName : fileNamesToLoad) {
+-            processSuccess = achBankService.loadAchBankFile(inputFileName);
+-      
+-            if (processSuccess) {
+-                processedFiles.add(inputFileName);
++            try {
++                processSuccess = achBankService.loadAchBankFile(inputFileName);
++                
++                if (processSuccess) {
++                    processedFiles.add(inputFileName);
++                }
+             }
+-            else {
+-                failedFiles.add(inputFileName);
++            catch (Exception e) {
++                writeErrorReport(inputFileName);
++                throw new RuntimeException("Error encountered while loading bank file: " + e.getMessage(), e);
+             }
+         }
+         
+-        if (failedFiles.size() > 0) {
+-            writeErrorReport(failedFiles);
+-        }
+-
+         removeDoneFiles(processedFiles);
+ 
+         return processSuccess;
+@@ -81,7 +79,7 @@
+      * 
+      * @param lines
+      */
+-    protected void writeErrorReport(List<String> fileNames) {
++    protected void writeErrorReport(String fileName) {
+         File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
+         BufferedWriter writer;
+         String routingNbr;
+@@ -96,12 +94,7 @@
+             writer.newLine();
+             writer.write("File Name");
+             writer.newLine();
+-            
+-            for (String fileName: fileNames) {
+-                writer.write(fileName);
+-                writer.newLine();
+-            }
+-            
++            writer.write(fileName);                        
+             writer.flush();
+             writer.close();
+         }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10274)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10275)
+@@ -53,7 +53,6 @@
+     
+     private BusinessObjectService businessObjectService;
+     private DateTimeService dateTimeService;
+-//    private ReportWriterService achReportWriterService;
+     private OriginationCodeDao originationCodeDao;
+     private String reportPath;
+     private String reportPrefix;
+@@ -159,10 +158,10 @@
+      * 2. If there is no payee ID number supplied, reject record. 
+      * 3. Payee Email Address should be required as the email addresses will be used by the ACH Advice
+      *  Notification Job (pdpSendAchAdviceNotificationsJob). Reject record if no email address is supplied.
+-     * 4. If the ACH Bank Account Number exists for the employee or student in the ACH Payee Bank Account Number
+-     *  Table, compare the remainder of the provided file account information and update the row accordingly, 
++     * 4. If the Payee ACH Account exists for the employee or student in the Payee ACH Account table
++     *  compare the remainder of the provided file account information and update the row accordingly, 
+      *  including the active indicator.
+-     * 5. If the ACH Bank Account Number does not exist in the ACH Payee Bank Account Number Table for the
++     * 5. If the Payee ACH Account does not exist in the Payee ACH Account table for the
+      *  associated payee, insert a row with the information in XML.
+      *  
+      * It also saves new or updated records into PDP_PAYEE_ACH_ACCT_T and saves reporting information,
+@@ -172,17 +171,9 @@
+      */
+     public Object parse(byte[] fileByteContent) throws ParseException {
+         List<PayeeACHAccount> payeeAccountList = new ArrayList<PayeeACHAccount>();
+-        PayeeACHAccount currentPayeeAcct;
+-//      ((WrappingBatchService) achReportWriterService).initialize();
+-        
++        PayeeACHAccount currentPayeeAcct;        
+         List<PayeeReportLine> reportLines = new ArrayList<PayeeReportLine>();
+         String systemSource = "";
+-        PayeeACHAccount existingPayeeAcct;
+-        PayeeACHAccount reportPayeeAcct;
+-        PayeeReportLine reportLine = new PayeeReportLine();
+-        Boolean isNew = true;
+-        Boolean validChanges = false;
+-        Boolean savePayeeAcct = true;        
+         BufferedReader bufferedFileReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileByteContent)));
+         String fileLine;
+         
+@@ -196,61 +187,7 @@
+                 }
+                 
+                 currentPayeeAcct = PayeeACHAcctFlatFileConverter.convert(fileLine);
+-                if (!existingRoutingNumber(currentPayeeAcct.getBankRoutingNumber())) {   // if routing number doesn't exist in our DB
+-                    reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING);
+-                    reportLines.add(reportLine);
+-                }
+-                else if (currentPayeeAcct.getPayeeIdNumber() == null || currentPayeeAcct.getPayeeIdNumber().equals("")) {
+-                    reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR);
+-                    reportLines.add(reportLine);
+-                }
+-                else if (currentPayeeAcct.getPayeeEmailAddress() == null || currentPayeeAcct.getPayeeEmailAddress().equals("")) {
+-                    reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
+-                    reportLines.add(reportLine);
+-                }
+-                else {
+-                    existingPayeeAcct = getPayeeACHAccount(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeIdentifierTypeCode());
+-                    if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
+-                        savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+-                        if (savePayeeAcct) {
+-                            // change message based on type
+-                            if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
+-                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
+-                            }
+-                            else if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
+-                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
+-                            }
+-                            else {
+-                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_LOADED_SUCCESSFULLY);
+-                            }
+-                            
+-                            reportLines.add(reportLine);
+-                            payeeAccountList.add(currentPayeeAcct);
+-                            businessObjectService.save(currentPayeeAcct);
+-                        }
+-                    }
+-                    else {    // currentPayeeAcct exists, so update existingPayeeAcct if necessary
+-                        // compare currentPayeeAcct to existingPayeeAcct
+-                        validChanges = comparePayeeAccts(currentPayeeAcct, existingPayeeAcct, reportLines);
+-                        
+-                        if (validChanges) {                            
+-                            // change message based on type
+-                            if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
+-                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
+-                            }
+-                            else if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
+-                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
+-                            }
+-                            else {
+-                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_UPDATED_SUCCESSFULLY);
+-                            }
+-                           
+-                            reportLines.add(reportLine);
+-                            payeeAccountList.add(existingPayeeAcct);
+-                            businessObjectService.save(existingPayeeAcct);                        
+-                        }
+-                    }
+-                }                
++                processPayeeAcct(currentPayeeAcct, reportLines, payeeAccountList);                
+             }
+             
+             // write audit report
+@@ -263,6 +200,69 @@
+         
+         return payeeAccountList;
+     }
++    
++    protected void processPayeeAcct(PayeeACHAccount currentPayeeAcct, List<PayeeReportLine> reportLines, List<PayeeACHAccount> payeeAccountList) {
++        PayeeReportLine reportLine = new PayeeReportLine();
++        PayeeACHAccount existingPayeeAcct;
++        Boolean validChanges = false;
++        Boolean savePayeeAcct = true;
++        
++        if (!existingRoutingNumber(currentPayeeAcct.getBankRoutingNumber())) {   // if routing number doesn't exist in our DB
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING);
++            reportLines.add(reportLine);
++        }
++        else if (currentPayeeAcct.getPayeeIdNumber() == null || currentPayeeAcct.getPayeeIdNumber().equals("")) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR);
++            reportLines.add(reportLine);
++        }
++        else if (currentPayeeAcct.getPayeeEmailAddress() == null || currentPayeeAcct.getPayeeEmailAddress().equals("")) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
++            reportLines.add(reportLine);
++        }
++        else {
++            existingPayeeAcct = getPayeeACHAccount(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeIdentifierTypeCode());
++            if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
++                savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
++                if (savePayeeAcct) {
++                    // change message based on type
++                    if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
++                    }
++                    else if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
++                    }
++                    else {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_LOADED_SUCCESSFULLY);
++                    }
++                    
++                    reportLines.add(reportLine);
++                    payeeAccountList.add(currentPayeeAcct);
++                    businessObjectService.save(currentPayeeAcct);
++                }
++            }
++            else {    // currentPayeeAcct exists, so update existingPayeeAcct if necessary
++                // compare currentPayeeAcct to existingPayeeAcct
++                validChanges = comparePayeeAccts(currentPayeeAcct, existingPayeeAcct, reportLines);
++                
++                if (validChanges) {                            
++                    // change message based on type
++                    if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
++                    }
++                    else if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
++                    }
++                    else {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_UPDATED_SUCCESSFULLY);
++                    }
++                   
++                    reportLines.add(reportLine);
++                    payeeAccountList.add(existingPayeeAcct);
++                    businessObjectService.save(existingPayeeAcct);                        
++                }
++            }
++        }
++    }
+ 
+     /**
+      * This method checks to see if the payee ACH account's routing number exists in our DB.
+@@ -304,32 +304,50 @@
+      * @param existingPayeeAcct
+      * @return true if there were changes to existingPayeeAcct; false if not
+      */
+-    private boolean comparePayeeAccts(PayeeACHAccount currentPayeeAcct, PayeeACHAccount existingPayeeAcct,
++    protected boolean comparePayeeAccts(PayeeACHAccount currentPayeeAcct, PayeeACHAccount existingPayeeAcct,
+             List<PayeeReportLine> reportLines) {
+         boolean validAcct = true;
+         boolean changesMade = false;
+-        List<String> validPayeeIDTypeCodes = new ArrayList<String>();
++        List<String> validPayeeIDTypeCodes = new ArrayList<String>();        
++        List<String> validAcctTypeCodes = new ArrayList<String>();
++        String oldBankRoutingNumber;
++        String newBankRoutingNumber;
++        String oldBankAccountNumber;
++        String newBankAccountNumber;
++        String oldPayeeName;
++        String newPayeeName;
++        String oldPayeeEmailAddr;
++        String newPayeeEmailAddr;
++        String oldPayeeIdTypeCode;
++        String newPayeeIdTypeCode;
++        String oldAchTransactionType;
++        String newAchTransactionType;                
++        String oldBankAccountTypeCode;
++        String newBankAccountTypeCode;        
++        
++        // check for valid changes in currentPayeeAcct
++        validAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
++        
++        // set up values for variables
+         validPayeeIDTypeCodes.add("T");
+         validPayeeIDTypeCodes.add("E");
+-        List<String> validAcctTypeCodes = new ArrayList<String>();
+         validAcctTypeCodes.add("22");
+         validAcctTypeCodes.add("32");
+-        String oldBankRoutingNumber = existingPayeeAcct.getBankRoutingNumber();
+-        String newBankRoutingNumber = currentPayeeAcct.getBankRoutingNumber();
+-        String oldBankAccountNumber = existingPayeeAcct.getBankAccountNumber();
+-        String newBankAccountNumber = currentPayeeAcct.getBankAccountNumber();
+-        String oldPayeeName = existingPayeeAcct.getPayeeName();
+-        String newPayeeName = currentPayeeAcct.getPayeeName();
+-        String oldPayeeEmailAddr = existingPayeeAcct.getPayeeEmailAddress();
+-        String newPayeeEmailAddr = currentPayeeAcct.getPayeeEmailAddress();
+-        String oldPayeeIdTypeCode = existingPayeeAcct.getPayeeIdentifierTypeCode();
+-        String newPayeeIdTypeCode = currentPayeeAcct.getPayeeIdentifierTypeCode();
+-        String oldAchTransactionType = currentPayeeAcct.getAchTransactionType();                
+-        String oldBankAccountTypeCode = existingPayeeAcct.getBankAccountTypeCode();
+-        String newBankAccountTypeCode = currentPayeeAcct.getBankAccountTypeCode();        
++        oldBankRoutingNumber = existingPayeeAcct.getBankRoutingNumber();
++        newBankRoutingNumber = currentPayeeAcct.getBankRoutingNumber();
++        oldBankAccountNumber = existingPayeeAcct.getBankAccountNumber();
++        newBankAccountNumber = currentPayeeAcct.getBankAccountNumber();
++        oldPayeeName = existingPayeeAcct.getPayeeName();
++        newPayeeName = currentPayeeAcct.getPayeeName();
++        oldPayeeEmailAddr = existingPayeeAcct.getPayeeEmailAddress();
++        newPayeeEmailAddr = currentPayeeAcct.getPayeeEmailAddress();
++        oldPayeeIdTypeCode = existingPayeeAcct.getPayeeIdentifierTypeCode();
++        newPayeeIdTypeCode = currentPayeeAcct.getPayeeIdentifierTypeCode();
++        oldAchTransactionType = existingPayeeAcct.getAchTransactionType();
++        newAchTransactionType = currentPayeeAcct.getAchTransactionType();                
++        oldBankAccountTypeCode = existingPayeeAcct.getBankAccountTypeCode();
++        newBankAccountTypeCode = currentPayeeAcct.getBankAccountTypeCode();        
+         
+-        // check for valid changes in currentPayeeAcct
+-        validAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+         
+         if (validAcct) {    // update existingPayeeAcct appropriately
+             // check routing number
+@@ -363,8 +381,8 @@
+             }
+             
+             // check ACH transaction type
+-            if (oldAchTransactionType != null && !oldAchTransactionType.equals("ACH")) {
+-                existingPayeeAcct.setAchTransactionType("ACH");
++            if (oldAchTransactionType == null || oldAchTransactionType.equals("") || !newAchTransactionType.equals(oldAchTransactionType)) {
++                existingPayeeAcct.setAchTransactionType(newAchTransactionType);
+                 changesMade = true;
+             }
+             
+@@ -387,7 +405,7 @@
+      * @param payeeAcct
+      * @return false if a validation fails that prohibits the insertion/update of the record; true otherwise.
+      */
+-    private boolean validatePayeeAcct(PayeeACHAccount payeeAcct, List<PayeeReportLine> reportLines) {
++    protected boolean validatePayeeAcct(PayeeACHAccount payeeAcct, List<PayeeReportLine> reportLines) {
+         PayeeReportLine reportLine;
+         boolean validAcct = true;
+         List<String> validPayeeIDTypeCodes = new ArrayList<String>();
+@@ -516,7 +534,7 @@
+      */
+     protected void writeReportHeadings(BufferedWriter writer) {
+         String payeeIdHdr = rightPad("Payee ID #", 20, " ");
+-        String payeeNmHdr = rightPad("Bank Name", 35, " ");
++        String payeeNmHdr = rightPad("Payee Name", 35, " ");
+         
+         try {
+             writer.write(payeeIdHdr + payeeNmHdr + "Message");
+@@ -578,6 +596,14 @@
+     public String getTitleKey() {
+         return KFSKeyConstants.MESSAGE_BATCH_UPLOAD_TITLE_ACH_PAYEE;
+     }
++    
++    /**
++     * Gets the businessObjectService attribute. 
++     * @return Returns the businessObjectService.
++     */
++    public BusinessObjectService getBusinessObjectService() {
++        return businessObjectService;
++    }
+ 
+     /**
+      * Sets the businessObjectService attribute value.
+@@ -626,12 +652,4 @@
+     public void setReportExtension(String reportExtension) {
+         this.reportExtension = reportExtension;
+     }
+-
+-    /**
+-     * Sets the achReportWriterService attribute value.
+-     * @param achReportWriterService The achReportWriterService to set.
+-     */
+-/*    public void setAchReportWriterService(ReportWriterService achReportWriterService) {
+-        this.achReportWriterService = achReportWriterService;
+-    } */  
+ }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10274)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10275)
+@@ -50,7 +50,6 @@
+     
+     private BusinessObjectService businessObjectService;
+     private DateTimeService dateTimeService;
+-//    private ReportWriterService achReportWriterService;
+     private OriginationCodeDao originationCodeDao;
+     private String reportPath;
+     private String reportPrefix;
+@@ -165,8 +164,6 @@
+      */
+     public Object parse(byte[] fileByteContent) throws ParseException {
+         List<ACHBank> bankList = new ArrayList<ACHBank>();
+-//        ((WrappingBatchService) achReportWriterService).initialize();
+-
+         List<BankReportLine> reportLines = new ArrayList<BankReportLine>();
+         String systemSource = "";
+         ACHBank currentBank;
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10274)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10275)
+@@ -143,16 +143,6 @@
+ 			<ref bean="dateTimeService" />
+ 		</property>
+ 	</bean>
+-
+-<!-- 	<bean id="achReportsStep" class="edu.arizona.kfs.pdp.batch.AchReportsStep" parent="step">
+-	    <property name="outputFilePath" value="${reports.directory}/pdp"/>
+-	    <property name="outputFilePrefix" value="pdpAchJob_"/>
+-	    <property name="outputFileSuffix" value=".txt"/>
+-	    <property name="inputFilePath" value="${temp.directory}"/>
+-	    <property name="inputFilePrefix" value="pdpAchJob_"/>
+-	    <property name="inputFileSuffix" value=".txt"/>
+-	    <property name="reportAggregatorService" ref="reportAggregatorService"/>
+-	</bean> -->
+ 		
+ 	<bean id="shippingInvoiceLoadService" class="edu.arizona.kfs.pdp.batch.service.impl.ShippingInvoiceLoadServiceImpl">
+ 		<property name="businessObjectService">
+@@ -245,9 +235,6 @@
+  		<property name="originationCodeDao">
+ 			<ref bean="originationCodeDao" />
+ 		</property>
+-<!-- 	    <property name="achReportWriterService">
+-	       <ref bean="achBankReportWriterService" />
+-	    </property> -->
+ 	</bean>
+ 
+ 	<bean id="achPayeeBankAcctInputFileType" class="edu.arizona.kfs.pdp.batch.AchPayeeBankAcctInputFileType "> 
+@@ -274,35 +261,8 @@
+ 	    </property>
+  		<property name="originationCodeDao">
+ 			<ref bean="originationCodeDao" />
+-		</property>	    
+-<!--    <property name="achReportWriterService">
+-	       <ref bean="achPayeeAcctReportWriterService" />
+-	    </property>-->	    
++		</property>	     
+ 	</bean>
+-
+-<!--  <bean id="achBankReportWriterService" parent="reportWriterService">
+-     <property name="filePath" value="${temp.directory}"/>
+-     <property name="fileNamePrefix" value="pdpAchBankJob-ach_bank_audit_report"/>
+-        <property name="title" value="ACH BANK AUDIT REPORT"/>
+-        <property name="classToBusinessObjectReportHelperBeanNames">
+-         <map>
+-          <entry key="org.kuali.kfs.pdp.businessobject.ACHBank" value="achBankReportHelper"/>
+-         </map>
+-        </property>
+-        <property name="aggregationModeOn" value="true"/>
+-    </bean>
+-
+-    <bean id="achPayeeAcctReportWriterService" parent="reportWriterService">
+-     <property name="filePath" value="${temp.directory}"/>
+-     <property name="fileNamePrefix" value="pdpAchPayeeJob-ach_payee_audit_report"/>
+-        <property name="title" value="ACH BANK AUDIT REPORT"/>
+-        <property name="classToBusinessObjectReportHelperBeanNames">
+-         <map>
+-          <entry key="org.kuali.kfs.pdp.businessobject.PayeeACHAccount" value="achPayeeReportHelper"/>
+-         </map>
+-        </property>
+-        <property name="aggregationModeOn" value="true"/>
+-    </bean> -->
+ 	
+ 	<bean id="shippingInvoiceDao" parent="platformAwareDao" class="edu.arizona.kfs.pdp.dataaccess.impl.ShippingInvoiceDaoOjb" />		
+ </beans>

@@ -1,0 +1,30 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10057)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10058)
+@@ -66,14 +66,20 @@
+         public static final String ACH_BANK_INVALID_DATA_VIEW_CD = "Invalid data view code - default value 1 used";
+         
+         public static final String ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER = "achPayeeBankAcctInputFileType";
+-        public static final String ACH_PAYEE_ACCT_INVALID_ROUTING = "Bank routing number doesn't exist in the PDP ACH Bank Table - record not loaded";
++        public static final String ACH_PAYEE_ACCT_INVALID_ROUTING = "Bank routing number doesn't exist - record not loaded";
+         public static final String ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY = "Employee ACH Account record successfully loaded";
+         public static final String ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY = "Entity ACH Account record successfully loaded";
+-        public static final String ACH_PAYEE_ACCT_VND_LOADED_SUCCESSFULLY = "Vendor ACH Account record successfully loaded";
++        public static final String ACH_PAYEE_ACCT_LOADED_SUCCESSFULLY = "ACH Account record successfully loaded";
+         public static final String ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY = "Employee ACH Account recorded successfully updated";
+         public static final String ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY = "Entity ACH Account recorded successfully updated";
+-        public static final String ACH_PAYEE_ACCT_VND_UPDATED_SUCCESSFULLY = "Vendor ACH Account recorded successfully updated";
+-        public static final String ACH_PAYEE_ACCT_INVALID_EMAIL = "Missing payee email address - record not loaded";
+-        
++        public static final String ACH_PAYEE_ACCT_UPDATED_SUCCESSFULLY = "ACH Account recorded successfully updated";
++        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR = "Payee ID number not provided - record not loaded";
++        public static final String ACH_PAYEE_ACCT_MISSING_EMAIL = "Payee email address not provided - record not loaded";
++        public static final String ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR = "Routing number not provided";
++        public static final String ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR = "Account number not provided";
++        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided";
++        public static final String ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR = "Invalid payee ID type";
++        public static final String ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR = "Bank account type not provided - record not loaded";
++        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";        
+     }
+ }

@@ -1,0 +1,23 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 11091)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 11092)
+@@ -77,12 +77,15 @@
+         public static final String ACH_PAYEE_ACCT_MISSING_EMAIL = "Payee email address not provided - record not loaded";
+         public static final String ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR = "Routing number not provided";
+         public static final String ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR = "Account number not provided";
+-        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided";
++        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided - record not loaded";
+         public static final String ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR = "Invalid payee ID type";
+         public static final String ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR = "Bank account type not provided - record not loaded";
+         public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";
+-        public static final String ACH_PAYEE_ACCT_OVERRIDE_EMPL_ERROR = "Employee exists in override group – no update occurred";
+-        public static final String ACH_PAYEE_ACCT_INVALID_EXISTING_MATCH = "Invalid payee ID/type found, but record exists in ACH setup - no updates occurred";        
++        public static final String ACH_PAYEE_ACCT_OVERRIDE_EMPL_ERROR = "Employee exists in override group - no update occurred";
++        public static final String ACH_PAYEE_ACCT_NO_NAME_MATCH = "No matching payee for payee ID/type found - record not loaded";
++        public static final String ACH_PAYEE_ACCT_INVALID_EXISTING_MATCH = "Invalid payee ID/type found, but record exists in ACH setup - no updates occurred";
++        
++        public static final String BANKING_INFORMATION_OVERRIDE_GROUP = "BANKING_INFORMATION_OVERRIDE_GROUP";
+     }
+     
+     public static final class ACHAcctTypeCodes {

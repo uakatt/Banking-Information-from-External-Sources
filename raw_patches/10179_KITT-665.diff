@@ -1,0 +1,106 @@
+Index: financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 0)
++++ financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 10179)
+@@ -0,0 +1,101 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.batch;
++
++import java.util.ArrayList;
++import java.util.List;
++
++import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
++import org.kuali.kfs.sys.ConfigureContext;
++import org.kuali.kfs.sys.context.KualiTestBase;
++
++import edu.arizona.kfs.pdp.batch.AchPayeeBankAcctInputFileType.PayeeReportLine;
++
++@ConfigureContext
++public class AchPayeeBankAcctInputFileTypeTest extends KualiTestBase {
++    protected PayeeACHAccount newPayeeAcct;
++    protected PayeeACHAccount existingPayeeAcct;
++    protected AchPayeeBankAcctInputFileType payeeInputFileType;
++    protected List<PayeeReportLine> reportLines;
++    
++    public void setUp() throws Exception {
++        super.setUp();
++        payeeInputFileType = new AchPayeeBankAcctInputFileType();
++        reportLines = new ArrayList<PayeeReportLine>();
++        setUpNewPayeeAcct();
++    }
++    
++    public void tearDown() throws Exception {
++        super.tearDown();
++    }
++    
++    protected void setUpExistingPayeeAcct() {
++        newPayeeAcct.setBankRoutingNumber("111111111");
++        newPayeeAcct.setBankAccountNumber("123456789");
++        newPayeeAcct.setPayeeName("TEST USER");
++        newPayeeAcct.setPayeeEmailAddress("test@test.arizona.edu");
++        newPayeeAcct.setPayeeIdentifierTypeCode("E");
++        newPayeeAcct.setAchTransactionType("ACH");
++        newPayeeAcct.setActive(true);
++        newPayeeAcct.setBankAccountTypeCode("22");
++        newPayeeAcct.setPayeeIdNumber("37059-2");
++    }
++    
++    protected void setUpNewPayeeAcct() {
++        existingPayeeAcct.setBankRoutingNumber("11400178");
++        existingPayeeAcct.setBankAccountNumber("123456789");
++        existingPayeeAcct.setPayeeName("TEST USER");
++        existingPayeeAcct.setPayeeEmailAddress("test@test.arizona.edu");
++        existingPayeeAcct.setPayeeIdentifierTypeCode("E");
++        existingPayeeAcct.setAchTransactionType("ACH");
++        existingPayeeAcct.setActive(true);
++        existingPayeeAcct.setBankAccountTypeCode("22");
++        existingPayeeAcct.setPayeeIdNumber("37059-2");
++    }
++ 
++    // test if routing number doesn't exist in our DB
++    
++    // test missing payee ID number
++    
++    // test missing email address
++    
++    // test for a valid payee routing number
++    
++    // test for a valid payee bank account
++    
++    // test for a valid payee name
++    
++    // test for a valid payee id type code
++    
++    // test for a valid payee ach transaction type
++    
++    // test for a valid payee bank acct type
++    
++    // compare new payee routing number to an existing one
++    
++    // compare new payee bank account to an existing one
++    
++    // compare new payee name to an existing one
++    
++    // compare new payee email address to an existing one
++    
++    // compare new payee payee id type code to an existing one
++    
++    // compare new payee ach transaction type to an existing one
++    
++    // compare new payee bank account type to an existing one
++    
++}

@@ -1,0 +1,145 @@
+Index: trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+===================================================================
+--- trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12267)
++++ trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12268)
+@@ -25,6 +25,7 @@
+ import org.kuali.kfs.sys.context.KualiTestBase;
+ import org.kuali.kfs.sys.context.SpringContext;
+ import org.kuali.rice.kim.bo.Person;
++import org.kuali.rice.kim.bo.entity.impl.KimPrincipalImpl;
+ import org.kuali.rice.kim.bo.impl.PersonImpl;
+ import org.kuali.rice.kim.service.GroupService;
+ import org.kuali.rice.kim.service.PersonService;
+@@ -98,7 +99,7 @@
+         existingPayeeAcct.setPayeeEmailAddress("test@test.arizona.edu");
+         existingPayeeAcct.setPayeeIdentifierTypeCode("T");
+         existingPayeeAcct.setAchTransactionType("");
+-        existingPayeeAcct.setActive(true);
++        existingPayeeAcct.setActive(false);
+         existingPayeeAcct.setBankAccountTypeCode("32");
+         existingPayeeAcct.setPayeeIdNumber("37059-2");
+     }
+@@ -318,6 +319,10 @@
+         payeeInputFileType.setPersonService(personService);
+         payeeInputFileType.comparePayeeAccts(newPayeeAcct, existingPayeeAcct, reportLines);       
+         
++        if (!newPayeeAcct.getPayeeName().equals(existingPayeeAcct.getPayeeName())) {
++            fail("Payee name not updated and it should have been.");
++        }
++        
+         if (!newPayeeAcct.getBankRoutingNumber().equals(existingPayeeAcct.getBankRoutingNumber())) {
+             fail("Bank routing number not updated and it should have been.");
+         }
+@@ -338,6 +343,10 @@
+             fail("ACH transaction type not updated and it should have been.");
+         }
+         
++        if (existingPayeeAcct.isActive() != newPayeeAcct.isActive()) {
++            fail("Active indicator not updated and it should have been.");
++        }
++        
+         if (!newPayeeAcct.getBankAccountTypeCode().equals(existingPayeeAcct.getBankAccountTypeCode())) {
+             fail("Bank account type code not updated and it should have been.");
+         }
+@@ -389,7 +398,13 @@
+         
+         public List<PersonImpl> findPeople(Map<String, String> criteria) {
+             List<PersonImpl> people = new ArrayList<PersonImpl>();
+-            people.add(new PersonImpl("hlo", "E"));
++            KimPrincipalImpl matchingPrincipal = new KimPrincipalImpl();
++            matchingPrincipal.setPrincipalName("hlo");
++            PersonImpl fakePerson = new PersonImpl(matchingPrincipal, "E");
++            fakePerson.setName("KIM NAME");
++            people.add(fakePerson);
++//            people.add(new PersonImpl("hlo", "E"));
++//            people.add(new PersonImpl(matchingPrincipal, "E"));
+             return people;
+         }
+ 
+Index: trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12267)
++++ trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12268)
+@@ -179,6 +179,7 @@
+      *  associated payee, insert a row with the information in XML.
+      * 8a. If no payee name is provided, reject record.
+      * 8b. If no payee match is found (derived from payee id type and payee id number), reject record.
++     * 9. If the bank account type code is blank or is invalid, reject the record.
+      *  
+      * It also saves new or updated records into PDP_PAYEE_ACH_ACCT_T and saves reporting information,
+      *  if applicable.
+@@ -445,6 +446,12 @@
+         newBankAccountTypeCode = currentPayeeAcct.getBankAccountTypeCode();
+         
+         if (validAcct) {    // update existingPayeeAcct appropriately
++            // update payee name with what is returned from the KIM person service if different
++            if (StringUtils.isNotBlank(newPayeeName) && !newPayeeName.equals(oldPayeeName)) {
++                existingPayeeAcct.setPayeeName(newPayeeName);
++                changesMade = true;
++            }
++            
+             // check routing number
+             if (StringUtils.isNotBlank(newBankRoutingNumber) && !newBankRoutingNumber.equals(oldBankRoutingNumber)) {
+                 existingPayeeAcct.setBankRoutingNumber(newBankRoutingNumber);
+@@ -475,8 +482,11 @@
+                 changesMade = true;
+             }
+             
+-            // assign new active indicator
+-            existingPayeeAcct.setActive(currentPayeeAcct.isActive());
++            // check active indicator
++            if (existingPayeeAcct.isActive() != currentPayeeAcct.isActive()) {
++                existingPayeeAcct.setActive(currentPayeeAcct.isActive());
++                changesMade = true;
++            }
+                         
+             //  check bank acct type
+             if (validAcctTypeCodes.contains(newBankAccountTypeCode) && !newBankAccountTypeCode.equals(oldBankAccountTypeCode)) {
+@@ -528,7 +538,10 @@
+             reportLines.add(reportLine);
+             validAcct = false;
+         }
+-        
++        else {
++            payeeAcct.setPayeeName(payee.getName().toUpperCase()); 
++        }
++                    
+         // check ACH transaction type
+         if (StringUtils.isBlank(achTransactionType)) {
+             payeeAcct.setAchTransactionType("ACH");
+@@ -542,7 +555,8 @@
+         }
+         else if (!validAcctTypeCodes.contains(bankAcctTypeCode)) {
+             reportLine = new PayeeReportLine(payeeIdNumber, payeeName, AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR);
+-            reportLines.add(reportLine);            
++            reportLines.add(reportLine);
++            validAcct = false;
+         }
+                 
+         return validAcct;
+Index: trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 12267)
++++ trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 12268)
+@@ -270,7 +270,7 @@
+ 	       <value>${reports.directory}/pdp</value>
+ 	    </property>
+ 	    <property name="reportPrefix">
+-	       <value>pdpLoadBankDataJob-payee_ach_audit_report</value>
++	       <value>pdpLoadPayeeACHDataJob-payee_ach_audit_report</value>
+ 	    </property>
+ 	    <property name="reportExtension">
+ 	       <value>txt</value>
+Index: trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 12267)
++++ trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 12268)
+@@ -80,7 +80,7 @@
+         public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided - record not loaded";
+         public static final String ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR = "Invalid payee ID type";
+         public static final String ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR = "Bank account type not provided - record not loaded";
+-        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";
++        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code - record not loaded";
+         public static final String ACH_PAYEE_ACCT_OVERRIDE_EMPL_ERROR = "Employee exists in override group - no update occurred";
+         public static final String ACH_PAYEE_ACCT_NO_NAME_MATCH = "No matching payee for payee ID/type found - record not loaded";
+         public static final String ACH_PAYEE_ACCT_INVALID_EXISTING_MATCH = "Invalid payee ID/type found, but record exists in ACH setup - no updates occurred";

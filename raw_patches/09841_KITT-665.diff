@@ -1,0 +1,115 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 9840)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 9841)
+@@ -47,6 +47,7 @@
+  		<property name="jobNames">
+ 			<list merge="true">
+ 				<value>processShippingInvoiceJob</value>
++				<value>pdpLoadBankDataJob</value>
+ 			</list>
+ 		</property>
+ 	</bean>
+@@ -59,6 +60,15 @@
+ 			</list>
+ 		</property>
+ 	</bean>
++
++	<bean id="pdpLoadBankDataJob" parent="scheduledJobDescriptor">
++		<property name="steps">
++			<list>
++				<ref bean="pdpLoadAchBankStep" />
++				<ref bean="pdpLoadAchPayeeBankAcctStep" />
++			</list>
++		</property>
++	</bean>
+ 	
+ 	<bean id="shippingInvoiceLoadStep" class="edu.arizona.kfs.pdp.batch.ShippingInvoiceLoadStep" parent="step">
+ 		<property name="shippingInvoiceLoadService">
+@@ -77,6 +87,30 @@
+ 			<ref bean="shippingInvoiceProcessService" />
+ 		</property>
+ 	</bean>
++
++	<bean id="pdpLoadAchBankStep" class="edu.arizona.kfs.pdp.batch.LoadAchBankStep" parent="step">
++		<property name="achBankService">
++			<ref bean="achBankService" />
++		</property>
++		<property name="batchInputFileService">
++		    <ref bean="batchInputFileService" />
++		</property>
++		<property name="achBankInputFileType">
++		    <ref bean="achBankInputFileType" />
++		</property>	
++	</bean>
++
++	<bean id="pdpLoadAchPayeeBankAcctStep" class="edu.arizona.kfs.pdp.batch.LoadAchPayeeBankAcctStep" parent="step">
++		<property name="payeeAchAccountService">
++			<ref bean="payeeAchAccountService" />
++		</property>
++		<property name="batchInputFileService">
++		    <ref bean="batchInputFileService" />
++		</property>
++		<property name="achPayeeBankAcctInputFileType">
++		    <ref bean="achPayeeBankAcctInputFileType" />
++		</property>	
++	</bean>
+ 		
+ 	<bean id="shippingInvoiceLoadService" class="edu.arizona.kfs.pdp.batch.service.impl.ShippingInvoiceLoadServiceImpl">
+ 		<property name="businessObjectService">
+@@ -107,6 +141,30 @@
+ 			<ref bean="shippingInvoiceDao" />
+ 		</property>
+ 	</bean>	
++
++	<bean id="achBankService" class="edu.arizona.kfs.pdp.batch.service.impl.AchBankServiceImpl">
++ 		<property name="businessObjectService">
++			<ref bean="businessObjectService" />
++		</property>
++		<property name="batchInputFileService">
++			<ref bean="batchInputFileService" />
++		</property>
++		<property name="achBankInputFileType">
++			<ref bean="achBankInputFileType" />
++		</property>	
++	</bean>
++
++ 	<bean id="payeeAchAccountService" class="edu.arizona.kfs.pdp.batch.service.impl.PayeeAchAccountServiceImpl">
++		<property name="businessObjectService">
++			<ref bean="businessObjectService" />
++		</property>
++		<property name="batchInputFileService">
++			<ref bean="batchInputFileService" />
++		</property>
++		<property name="achPayeeBankAcctInputFileType">
++			<ref bean="achPayeeBankAcctInputFileType" />
++		</property>	
++	</bean>
+ 	
+ 	<bean id="shippingInputFileType" class="edu.arizona.kfs.pdp.batch.ShippingInputFileType"> 
+ 	    <property name="directoryPath">
+@@ -125,6 +183,24 @@
+ 	       <ref bean="dateTimeService"/>
+ 	    </property>
+ 	</bean>
++
++	<bean id="achBankInputFileType" class="edu.arizona.kfs.pdp.batch.AchBankInputFileType"> 
++	    <property name="directoryPath">
++	       <value>${staging.directory}/pdp/achBanks</value>
++	    </property>
++	    <property name="dateTimeService">
++	       <ref bean="dateTimeService"/>
++	    </property>
++	</bean>
++
++	<bean id="achPayeeBankAcctInputFileType" class="edu.arizona.kfs.pdp.batch.AchPayeeBankAcctInputFileType "> 
++	    <property name="directoryPath">
++	       <value>${staging.directory}/pdp/payeeBankAccounts</value>
++	    </property>
++	    <property name="dateTimeService">
++	       <ref bean="dateTimeService"/>
++	    </property>
++	</bean>
+ 	
+ 	<bean id="shippingInvoiceDao" parent="platformAwareDao" class="edu.arizona.kfs.pdp.dataaccess.impl.ShippingInvoiceDaoOjb" />		
+ </beans>

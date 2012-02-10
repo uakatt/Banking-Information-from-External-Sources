@@ -1,0 +1,33 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 9913)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 9914)
+@@ -55,10 +55,25 @@
+     // KITT-665
+     public static final class ACHFileConstants {
+         public static final String ACH_BANK_FILE_TYPE_IDENTIFIER = "achBankInputFileType";
+-        public static final String ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER = "achPayeeBankAcctInputFileType";
+         public static final String ACH_BANK_LOADED_SUCCESSFULLY = "Bank record successfully loaded";
+-        public static final String ACH_INVALID_OFFICE_CD_ERROR = "Invalid office code - default value O used";
+-        public static final String ACH_INVALID_BANK_TYP_CD_ERROR = "Invalid record type code - default value 0 used";
++        public static final String ACH_BANK_INVALID_OFFICE_CD_ERROR = "Invalid office code - default value O used";
++        public static final String ACH_BANK_INVALID_TYP_CD_ERROR = "Invalid record type code - default value 0 used";
+         public static final String ACH_BANK_TYP_CD_ROUTING_NBR_ERROR = "New routing number not provided for record type code 2 - record not loaded";
++        public static final String ACH_BANK_MISSING_NM_ERROR = "Bank name not provided - record not loaded";
++        public static final String ACH_BANK_INCOMPLETE_ADDR_ERROR = "Incomplete bank address - record not loaded";
++        public static final String ACH_BANK_INCOMPLETE_PHONE_ERROR = "Incomplete phone number - default value with zeros used";
++        public static final String ACH_BANK_INVALID_INST_STAT_CD = "Invalid institution status code - default value 1 used";
++        public static final String ACH_BANK_INVALID_DATA_VIEW_CD = "Invalid data view code - default value 1 used";
++        
++        public static final String ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER = "achPayeeBankAcctInputFileType";
++        public static final String ACH_PAYEE_ACCT_INVALID_ROUTING = "Bank routing number doesn't exist in the PDP ACH Bank Table - record not loaded";
++        public static final String ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY = "Employee ACH Account record successfully loaded";
++        public static final String ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY = "Entity ACH Account record successfully loaded";
++        public static final String ACH_PAYEE_ACCT_VND_LOADED_SUCCESSFULLY = "Vendor ACH Account record successfully loaded";
++        public static final String ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY = "Employee ACH Account recorded successfully updated";
++        public static final String ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY = "Entity ACH Account recorded successfully updated";
++        public static final String ACH_PAYEE_ACCT_VND_UPDATED_SUCCESSFULLY = "Vendor ACH Account recorded successfully updated";
++        public static final String ACH_PAYEE_ACCT_INVALID_EMAIL = "Missing payee email address - record not loaded";
++        
+     }
+ }

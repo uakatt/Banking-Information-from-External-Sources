@@ -1,0 +1,41 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10964)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10965)
+@@ -25,8 +25,8 @@
+     public static final String ENABLE_SALES_TAX_AMOUNT_TAX_EXEMPT_IND = "ENABLE_SALES_TAX_AMOUNT_TAX_EXEMPT_IND";  // for KITT-235
+     public static final String GL_USETAX_DOCUMENT_TYPE = "USE_TAX_DOCUMENT_TYPE";
+     public static final String GL_USETAX_TAX_REGION = "USE_TAX_TAX_REGION_CODE";
+-    public static final String VALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP_PARM = "VALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP";  // for KITT-296
+-    public static final String INVALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP_PARM = "INVALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP";  // for KITT-296
++    public static final String VALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP_PARM = "VALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP";  // for KITT-296 and KITT-803
++    public static final String INVALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP_PARM = "INVALID_OBJECT_SUB_TYPES_BY_SUB_FUND_GROUP";  // for KITT-296 and KITT-803
+     public static final String REFERENCE_NUMBER_VALIDATION_IND_PARM = "REFERENCE_NUMBER_VALIDATION_IND";
+     public static final String DEFAULT_NUMBER_OF_DAYS_ERROR_CERTIFICATION_TAB_REQUIRED = "DEFAULT_NUMBER_OF_DAYS_ERROR_CERTIFICATION_TAB_REQUIRED";
+     public static final String ERROR_CERTIFICATION_DEFAULT_OVERRIDE_BY_SUB_FUND = "ERROR_CERTIFICATION_DEFAULT_OVERRIDE_BY_SUB_FUND";
+@@ -80,6 +80,24 @@
+         public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided";
+         public static final String ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR = "Invalid payee ID type";
+         public static final String ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR = "Bank account type not provided - record not loaded";
+-        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";        
++        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";
++        public static final String ACH_PAYEE_ACCT_OVERRIDE_EMPL_ERROR = "Employee exists in override group – no update occurred";
++        public static final String ACH_PAYEE_ACCT_INVALID_EXISTING_MATCH = "Invalid payee ID/type found, but record exists in ACH setup - no updates occurred";        
+     }
++    
++    public static final class ACHAcctTypeCodes {
++        public static String CHECKING = "22";
++        public static String SAVINGS = "32";
++    }
++    
++    public static final class ACHBankOfficeCodes {
++        public static String MAIN = "O";
++        public static String BRANCH = "B";
++    }
++    
++    public static final class ACHBankTypeCodes {
++        public static String FEDERAL_RESERVE = "0";
++        public static String CUSTOMER_ROUTING_NBR = "1";
++        public static String NEW_CUSTOMER_ROUTING_NBR = "2";
++    }
+ }

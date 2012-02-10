@@ -1,0 +1,115 @@
+Index: financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+===================================================================
+--- financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12398)
++++ financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 12399)
+@@ -323,19 +323,19 @@
+             fail("Payee name not updated and it should have been.");
+         }
+         
+-        if (!newPayeeAcct.getBankRoutingNumber().equals(existingPayeeAcct.getBankRoutingNumber())) {
++        if (!newPayeeAcct.getBankRoutingNumber().equalsIgnoreCase(existingPayeeAcct.getBankRoutingNumber())) {
+             fail("Bank routing number not updated and it should have been.");
+         }
+         
+-        if (!newPayeeAcct.getBankAccountNumber().equals(existingPayeeAcct.getBankAccountNumber())) {
++        if (!newPayeeAcct.getBankAccountNumber().equalsIgnoreCase(existingPayeeAcct.getBankAccountNumber())) {
+             fail("Bank account number not updated and it should have been.");
+         }
+         
+-        if (!newPayeeAcct.getPayeeEmailAddress().equals(existingPayeeAcct.getPayeeEmailAddress())) {
++        if (!newPayeeAcct.getPayeeEmailAddress().equalsIgnoreCase(existingPayeeAcct.getPayeeEmailAddress())) {
+             fail("Payee email address not updated and it should have been.");
+         }
+         
+-        if (!newPayeeAcct.getPayeeIdentifierTypeCode().equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++        if (!newPayeeAcct.getPayeeIdentifierTypeCode().equalsIgnoreCase(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+             fail("Payee ID type code not updated and it should have been.");
+         }
+         
+@@ -347,7 +347,7 @@
+             fail("Active indicator not updated and it should have been.");
+         }
+         
+-        if (!newPayeeAcct.getBankAccountTypeCode().equals(existingPayeeAcct.getBankAccountTypeCode())) {
++        if (!newPayeeAcct.getBankAccountTypeCode().equalsIgnoreCase(existingPayeeAcct.getBankAccountTypeCode())) {
+             fail("Bank account type code not updated and it should have been.");
+         }
+         
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12398)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 12399)
+@@ -265,10 +265,10 @@
+                 savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+                 if (savePayeeAcct) {
+                     // change message based on type
+-                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equalsIgnoreCase(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
+                     }
+-                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equals(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equalsIgnoreCase(currentPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -286,10 +286,10 @@
+                 
+                 if (validChanges) {                            
+                     // change message based on type
+-                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    if (PdpConstants.PayeeIdTypeCodes.ENTITY.equalsIgnoreCase(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
+                     }
+-                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++                    else if (PdpConstants.PayeeIdTypeCodes.EMPLOYEE.equalsIgnoreCase(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
+                         reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
+                     }
+                     else {
+@@ -345,7 +345,7 @@
+     private Person getPersonFromPayeeInfo(String payeeIdNbr, String payeeIdType) {
+         Map<String, String> fieldsForLookup = new HashMap<String, String>();
+         
+-        if (payeeIdType.equals(PdpConstants.PayeeIdTypeCodes.EMPLOYEE)) {
++        if (payeeIdType.equalsIgnoreCase(PdpConstants.PayeeIdTypeCodes.EMPLOYEE)) {
+             fieldsForLookup.put(KIMPropertyConstants.Person.EMPLOYEE_ID, payeeIdNbr);         
+         }
+         else {    // payee is an entity
+@@ -453,25 +453,25 @@
+             }
+             
+             // check routing number
+-            if (StringUtils.isNotBlank(newBankRoutingNumber) && !newBankRoutingNumber.equals(oldBankRoutingNumber)) {
++            if (StringUtils.isNotBlank(newBankRoutingNumber) && !newBankRoutingNumber.equalsIgnoreCase(oldBankRoutingNumber)) {
+                 existingPayeeAcct.setBankRoutingNumber(newBankRoutingNumber);
+                 changesMade = true;
+             }
+ 
+             // check bank account number
+-            if (StringUtils.isNotBlank(newBankAccountNumber) && !newBankAccountNumber.equals(oldBankAccountNumber)) {
++            if (StringUtils.isNotBlank(newBankAccountNumber) && !newBankAccountNumber.equalsIgnoreCase(oldBankAccountNumber)) {
+                 existingPayeeAcct.setBankAccountNumber(newBankAccountNumber);
+                 changesMade = true;
+             }
+             
+             // check payee email address
+-            if (StringUtils.isNotBlank(newPayeeEmailAddr) && !newPayeeEmailAddr.equals(oldPayeeEmailAddr)) {
++            if (StringUtils.isNotBlank(newPayeeEmailAddr) && !newPayeeEmailAddr.equalsIgnoreCase(oldPayeeEmailAddr)) {
+                 existingPayeeAcct.setPayeeEmailAddress(newPayeeEmailAddr);
+                 changesMade = true;
+             }
+             
+             // check payee id type code
+-            if (validPayeeIDTypeCodes.contains(newPayeeIdTypeCode) && !newPayeeIdTypeCode.equals(oldPayeeIdTypeCode)) {
++            if (validPayeeIDTypeCodes.contains(newPayeeIdTypeCode) && !newPayeeIdTypeCode.equalsIgnoreCase(oldPayeeIdTypeCode)) {
+                 existingPayeeAcct.setPayeeIdentifierTypeCode(newPayeeIdTypeCode);
+                 changesMade = true;
+             }
+@@ -489,7 +489,7 @@
+             }
+                         
+             //  check bank acct type
+-            if (validAcctTypeCodes.contains(newBankAccountTypeCode) && !newBankAccountTypeCode.equals(oldBankAccountTypeCode)) {
++            if (validAcctTypeCodes.contains(newBankAccountTypeCode) && !newBankAccountTypeCode.equalsIgnoreCase(oldBankAccountTypeCode)) {
+                 existingPayeeAcct.setBankAccountTypeCode(newBankAccountTypeCode);
+                 changesMade = true;
+             }

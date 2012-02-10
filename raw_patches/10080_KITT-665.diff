@@ -1,0 +1,150 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10079)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10080)
+@@ -468,6 +468,7 @@
+                 payeeNm = rightPad(line.getPayeeNm(), 35, " ");
+                 writer.write(payeeId + payeeNm + line.getMessage());
+                 writer.newLine();
++                writer.newLine();
+             }
+             
+             writer.flush();
+@@ -495,10 +496,12 @@
+         try {
+             writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
+             writer.newLine();
++            writer.newLine();
+             writer.write("Payee ACH Account Interface");
+             writer.newLine();
+             writer.write("System Source: " + systemSource + " - " + source);
+             writer.newLine();
++            writer.newLine();
+         }
+         catch (IOException e) {
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());
+@@ -518,6 +521,7 @@
+         try {
+             writer.write(payeeIdHdr + payeeNmHdr + "Message");
+             writer.newLine();
++            writer.newLine();
+         }
+         catch (IOException e) {
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10079)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10080)
+@@ -231,7 +231,7 @@
+      * @param bank
+      * @return
+      */
+-    protected Boolean validateBank(ACHBank bank, List<BankReportLine> reportMessages) {
++    protected Boolean validateBank(ACHBank bank, List<BankReportLine> reportLines) {
+         String bankRoutingNbr = bank.getBankRoutingNumber();
+         String bankOfficeCd = bank.getBankOfficeCode();
+         String bankTypeCd = bank.getBankTypeCode();
+@@ -256,14 +256,14 @@
+         
+         // check customer name, return false if not present
+         if (bankNm == null || bankNm.equals("")) {
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_MISSING_NM_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_MISSING_NM_ERROR));
+             return false; 
+         }
+         
+         // check address, return false if not present
+         if (bankAddr == null || bankAddr.equals("") || bankCity == null || bankCity.equals("") || bankSt == null || bankSt.equals("")
+              || bankZipCd == null || bankZipCd.equals("")) {
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR));
+             return false;            
+         }
+         
+@@ -273,17 +273,17 @@
+         }
+         else if (!validTypeCodes.contains(bankTypeCd)) {    // if an invalid code
+             bank.setBankTypeCode("0");
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_TYP_CD_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_TYP_CD_ERROR));
+         }
+         else if (bankTypeCd.equals("2") && (bankNewRoutingNbr == null || bankNewRoutingNbr.equals(""))) {    // if no new routing number
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR));
+             return false;
+         }
+         
+         // check office code
+         if (bankOfficeCd == null || !validOfficeCodes.contains(bankOfficeCd)) {
+             bank.setBankOfficeCode("O");
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_OFFICE_CD_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_OFFICE_CD_ERROR));
+         }
+                 
+         // check new routing number
+@@ -294,31 +294,31 @@
+         // check area code
+         if (bankPhoneAreaCd == null || bankPhoneAreaCd.equals("")) {
+             bank.setBankPhoneAreaCode("000");
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
+         }
+         
+         // check phone number prefix
+         if (bankPhonePrefixNbr == null || bankPhonePrefixNbr.equals("")) {
+             bank.setBankPhonePrefixNumber("000");
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
+         }
+         
+         // check phone number suffix
+         if (bankPhoneSuffixNbr == null || bankPhoneSuffixNbr.equals("")) {
+             bank.setBankPhoneSuffixNumber("0000");
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
+         }
+         
+         // check institution status code
+         if (bankInstitutionStatusCd == null || bankInstitutionStatusCd.equals("")) {
+             bank.setBankInstitutionStatusCode("1");
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_INST_STAT_CD));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_INST_STAT_CD));
+         }
+         
+         // check data view code
+         if (bankDataViewCd == null || bankDataViewCd.equals("")) {
+             bank.setBankDataViewCode("1");
+-            reportMessages.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_DATA_VIEW_CD));
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_DATA_VIEW_CD));
+         }
+         
+         return true;
+@@ -345,6 +345,7 @@
+                 bankNm = rightPad(line.getBankName(), 40, " ");
+                 writer.write(routingNbr + bankNm + line.getMessage());
+                 writer.newLine();
++                writer.newLine();
+             }
+             
+             writer.flush();
+@@ -372,10 +373,12 @@
+         try {
+             writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
+             writer.newLine();
++            writer.newLine();
+             writer.write("ACH Bank Interface");
+             writer.newLine();
+             writer.write("System Source: " + systemSource + " - " + source);
+             writer.newLine();
++            writer.newLine();
+         }
+         catch (IOException e) {
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());
+@@ -395,6 +398,7 @@
+         try {
+             writer.write(bankRoutingHdr + bankNmHdr + "Message");
+             writer.newLine();
++            writer.newLine();
+         }
+         catch (IOException e) {
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());

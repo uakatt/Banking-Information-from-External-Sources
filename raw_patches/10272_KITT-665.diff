@@ -1,0 +1,331 @@
+Index: financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 10271)
++++ financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java	(revision 10272)
+@@ -17,12 +17,20 @@
+ 
+ import java.util.ArrayList;
+ import java.util.List;
++import java.util.Map;
+ 
++import org.kuali.kfs.pdp.businessobject.ACHBank;
+ import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
+ import org.kuali.kfs.sys.ConfigureContext;
+ import org.kuali.kfs.sys.context.KualiTestBase;
++import org.kuali.kfs.sys.context.SpringContext;
++import org.kuali.rice.kns.bo.PersistableBusinessObject;
++import org.kuali.rice.kns.dao.BusinessObjectDao;
++import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.service.impl.BusinessObjectServiceImpl;
+ 
+ import edu.arizona.kfs.pdp.batch.AchPayeeBankAcctInputFileType.PayeeReportLine;
++import edu.arizona.kfs.sys.AZKFSConstants;
+ 
+ @ConfigureContext
+ public class AchPayeeBankAcctInputFileTypeTest extends KualiTestBase {
+@@ -30,72 +38,271 @@
+     protected PayeeACHAccount existingPayeeAcct;
+     protected AchPayeeBankAcctInputFileType payeeInputFileType;
+     protected List<PayeeReportLine> reportLines;
++    protected List<PayeeACHAccount> payeeAccountList;
++//    protected AchPayeeBankAcctInputFileType achPayeeBankAcctInputFileType;
++    protected BusinessObjectService oldBusinessObjectService;
++    protected BusinessObjectService boService;
+     
+     public void setUp() throws Exception {
+         super.setUp();
+         payeeInputFileType = new AchPayeeBankAcctInputFileType();
+         reportLines = new ArrayList<PayeeReportLine>();
++        payeeAccountList = new ArrayList<PayeeACHAccount>();
+         setUpNewPayeeAcct();
++        setUpExistingPayeeAcct();
++//        achPayeeBankAcctInputFileType = SpringContext.getBean(AchPayeeBankAcctInputFileType.class);
++        oldBusinessObjectService = payeeInputFileType.getBusinessObjectService();
+     }
+     
+     public void tearDown() throws Exception {
+         super.tearDown();
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
+     }
+     
+-    protected void setUpExistingPayeeAcct() {
+-        newPayeeAcct.setBankRoutingNumber("111111111");
++    protected void setUpNewPayeeAcct() {
++        newPayeeAcct = new PayeeACHAccount();
++        newPayeeAcct.setBankRoutingNumber("11111111");
+         newPayeeAcct.setBankAccountNumber("123456789");
+         newPayeeAcct.setPayeeName("TEST USER");
+-        newPayeeAcct.setPayeeEmailAddress("test@test.arizona.edu");
++        newPayeeAcct.setPayeeEmailAddress("testuser@test.arizona.edu");
+         newPayeeAcct.setPayeeIdentifierTypeCode("E");
+-        newPayeeAcct.setAchTransactionType("ACH");
++        newPayeeAcct.setAchTransactionType(null);
+         newPayeeAcct.setActive(true);
+         newPayeeAcct.setBankAccountTypeCode("22");
+         newPayeeAcct.setPayeeIdNumber("37059-2");
+     }
+     
+-    protected void setUpNewPayeeAcct() {
++    protected void setUpExistingPayeeAcct() {
++        existingPayeeAcct = new PayeeACHAccount();
+         existingPayeeAcct.setBankRoutingNumber("11400178");
+-        existingPayeeAcct.setBankAccountNumber("123456789");
+-        existingPayeeAcct.setPayeeName("TEST USER");
++        existingPayeeAcct.setBankAccountNumber("987654321");
++        existingPayeeAcct.setPayeeName("TEST");
+         existingPayeeAcct.setPayeeEmailAddress("test@test.arizona.edu");
+-        existingPayeeAcct.setPayeeIdentifierTypeCode("E");
+-        existingPayeeAcct.setAchTransactionType("ACH");
++        existingPayeeAcct.setPayeeIdentifierTypeCode("T");
++        existingPayeeAcct.setAchTransactionType("");
+         existingPayeeAcct.setActive(true);
+-        existingPayeeAcct.setBankAccountTypeCode("22");
++        existingPayeeAcct.setBankAccountTypeCode("32");
+         existingPayeeAcct.setPayeeIdNumber("37059-2");
+     }
+- 
+-    // test if routing number doesn't exist in our DB
++
++    // test if routing number doesn't exist in our database
++    public void testProcessPayeeAcct_nonExistentRoutingNumber() throws Exception {
++        String currentRoutingNbr = newPayeeAcct.getBankRoutingNumber();
++        boService = new MyBusinessObjectServiceWithNonExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++                
++        newPayeeAcct.setBankRoutingNumber("11111111");
++        payeeInputFileType.processPayeeAcct(newPayeeAcct, reportLines, payeeAccountList);
++        newPayeeAcct.setBankRoutingNumber(currentRoutingNbr);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Routing number doesn't exist and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING);        
++    }
++
++    public void testProcessPayeeAcct_missingPayeeIDNumber() throws Exception {
++        String currentPayeeID = newPayeeAcct.getPayeeIdNumber();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setPayeeIdNumber("");
++        payeeInputFileType.processPayeeAcct(newPayeeAcct, reportLines, payeeAccountList);
++        newPayeeAcct.setPayeeIdNumber(currentPayeeID);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Missing payee ID number and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR);
++    }
++
++    public void testProcessPayeeAcct_missingEmailAddress() throws Exception {
++        String currentEmailAddr = newPayeeAcct.getPayeeEmailAddress();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setPayeeEmailAddress("");
++        payeeInputFileType.processPayeeAcct(newPayeeAcct, reportLines, payeeAccountList);
++        newPayeeAcct.setPayeeEmailAddress(currentEmailAddr);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Missing email address and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
++    }
+     
+-    // test missing payee ID number
+-    
+-    // test missing email address
+-    
+     // test for a valid payee routing number
++    public void testValidatePayeeAcct_missingRoutingNumber() throws Exception {
++        String currentRoutingNbr = newPayeeAcct.getBankRoutingNumber();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setBankRoutingNumber("");
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        newPayeeAcct.setBankRoutingNumber(currentRoutingNbr);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Missing routing number and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR);
++    }
+     
+-    // test for a valid payee bank account
++    public void testValidatePayeeAcct_missingBankAccount() throws Exception {
++        String currentBankAcct = newPayeeAcct.getBankAccountNumber();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setBankAccountNumber("");
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        newPayeeAcct.setBankAccountNumber(currentBankAcct);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Missing bank account number and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR);
++    }
+     
+-    // test for a valid payee name
++    public void testValidatePayeeAcct_missingPayeeName() throws Exception {
++        String currentPayeeName = newPayeeAcct.getPayeeName();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setPayeeName("");
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        newPayeeAcct.setPayeeName(currentPayeeName);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Missing payee name and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR);
++    }
+     
+-    // test for a valid payee id type code
++    public void testValidatePayeeAcct_invalidPayeeIDType() throws Exception {
++        String currentPayeeIdTypeCode = newPayeeAcct.getPayeeIdentifierTypeCode();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setPayeeIdentifierTypeCode("");
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        newPayeeAcct.setPayeeIdentifierTypeCode(currentPayeeIdTypeCode);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Invalid payee ID type and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR);
++    }
+     
+-    // test for a valid payee ach transaction type
++    public void testValidatePayeeAcct_invalidAchTransactionType() throws Exception {
++        String currentAchTransactionType = newPayeeAcct.getAchTransactionType();
++        boolean correctType = false;
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setAchTransactionType("");
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);       
++        
++        if (newPayeeAcct.getAchTransactionType().equals("ACH")) {
++            correctType = true;
++        }
++        assertTrue("Invalid ACH transaction type and it wasn't set to the default.", correctType);
++        
++        newPayeeAcct.setAchTransactionType(currentAchTransactionType);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++    }
+     
+-    // test for a valid payee bank acct type
++    public void testValidatePayeeAcct_missingBankAccountTypeCode() throws Exception {
++        String currentBankAccountTypeCode = newPayeeAcct.getBankAccountTypeCode();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setBankAccountTypeCode("");
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        newPayeeAcct.setBankAccountTypeCode(currentBankAccountTypeCode);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Missing bank account type and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR);
++    }
+     
+-    // compare new payee routing number to an existing one
++    public void testValidatePayeeAcct_invalidBankAccountTypeCode() throws Exception {
++        String currentBankAccountTypeCode = newPayeeAcct.getBankAccountTypeCode();
++        boService = new MyBusinessObjectServiceWithExistingRouting();
++        payeeInputFileType.setBusinessObjectService(boService);
++        reportLines.clear();
++        
++        newPayeeAcct.setBankAccountTypeCode("00");
++        payeeInputFileType.validatePayeeAcct(newPayeeAcct, reportLines);
++        newPayeeAcct.setBankAccountTypeCode(currentBankAccountTypeCode);
++        payeeInputFileType.setBusinessObjectService(oldBusinessObjectService);
++        
++        assertEquals("Invalid bank account type and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR);
++    }
+     
+-    // compare new payee bank account to an existing one
+-    
+-    // compare new payee name to an existing one
+-    
+-    // compare new payee email address to an existing one
+-    
+-    // compare new payee payee id type code to an existing one
+-    
+-    // compare new payee ach transaction type to an existing one
+-    
+-    // compare new payee bank account type to an existing one
+-    
++    // compare new payee acct to an existing one, test existing acct updates
++    public void testComparePayeeAccts_testAll() throws Exception {
++        payeeInputFileType.comparePayeeAccts(newPayeeAcct, existingPayeeAcct, reportLines);
++        
++        if (!newPayeeAcct.getBankRoutingNumber().equals(existingPayeeAcct.getBankRoutingNumber())) {
++            fail("Bank routing number not updated and it should have been.");
++        }
++        
++        if (!newPayeeAcct.getBankAccountNumber().equals(existingPayeeAcct.getBankAccountNumber())) {
++            fail("Bank account number not updated and it should have been.");
++        }
++        
++        if (!newPayeeAcct.getPayeeName().equals(existingPayeeAcct.getPayeeName())) {
++            fail("Payee name not updated and it should have been.");
++        }
++        
++        if (!newPayeeAcct.getPayeeEmailAddress().equals(existingPayeeAcct.getPayeeEmailAddress())) {
++            fail("Payee email address not updated and it should have been.");
++        }
++        
++        if (!newPayeeAcct.getPayeeIdentifierTypeCode().equals(existingPayeeAcct.getPayeeIdentifierTypeCode())) {
++            fail("Payee ID type code not updated and it should have been.");
++        }
++        
++        if (!newPayeeAcct.getAchTransactionType().equals(existingPayeeAcct.getAchTransactionType())) {
++            fail("ACH transaction type not updated and it should have been.");
++        }
++        
++        if (!newPayeeAcct.getBankAccountTypeCode().equals(existingPayeeAcct.getBankAccountTypeCode())) {
++            fail("Bank account type code not updated and it should have been.");
++        }
++        
++        setUpExistingPayeeAcct();
++    }
++     
++    static class MyBusinessObjectServiceWithNonExistingRouting extends BusinessObjectServiceImpl {
++        
++        @SuppressWarnings("deprecation")
++        public PersistableBusinessObject findByPrimaryKey(Class someClass, Map fieldValues) {
++            super.setBusinessObjectDao(SpringContext.getBean(BusinessObjectDao.class));
++            
++            if (someClass.getName().equals("org.kuali.kfs.pdp.businessobject.ACHBank")) {
++                // return null to pretend there is no match for the ACHBank passed in
++                return null;
++            }
++            else {    // someClass = PayeeACHAccount 
++                PayeeACHAccount someExistingAccount = new PayeeACHAccount();
++                someExistingAccount.setPayeeIdNumber("37059-2");
++                someExistingAccount.setPayeeIdentifierTypeCode("E");
++                return someExistingAccount; 
++            }            
++        }        
++    }
++
++    static class MyBusinessObjectServiceWithExistingRouting extends BusinessObjectServiceImpl {
++        
++        @SuppressWarnings("deprecation")
++        public PersistableBusinessObject findByPrimaryKey(Class someClass, Map fieldValues) {
++            super.setBusinessObjectDao(SpringContext.getBean(BusinessObjectDao.class));
++            
++            if (someClass.getName().equals("org.kuali.kfs.pdp.businessobject.ACHBank")) {
++                ACHBank fakeBank = new ACHBank();
++                fakeBank.setBankRoutingNumber("11111111");                
++                return fakeBank;
++            }
++            else {    // someClass = PayeeACHAccount 
++                PayeeACHAccount someExistingAccount = new PayeeACHAccount();
++                someExistingAccount.setPayeeIdNumber("37059-2");
++                someExistingAccount.setPayeeIdentifierTypeCode("E");
++                return someExistingAccount; 
++            }            
++        }        
++    }
+ }

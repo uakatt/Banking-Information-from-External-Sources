@@ -1,0 +1,2121 @@
+Index: financial-system/kfs/trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 10300)
++++ financial-system/kfs/trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java	(revision 10301)
+@@ -34,9 +34,13 @@
+     public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
+         LOG.debug("execute() started");
+ 
+-        String filename = getParameterService().getParameterValue(KfsParameterConstants.PRE_DISBURSEMENT_ALL.class, PdpParameterConstants.ACH_BANK_INPUT_FILE);
++        /** start AZ KITT-665 **/        
++        throw new RuntimeException("This is deprecated; not intended to be used in UA implementation.");
++        /** end AZ KITT-665 **/
++        
++//        String filename = getParameterService().getParameterValue(KfsParameterConstants.PRE_DISBURSEMENT_ALL.class, PdpParameterConstants.ACH_BANK_INPUT_FILE);
+ 
+-        return achBankService.reloadTable(directoryName + filename);
++//        return achBankService.reloadTable(directoryName + filename);
+     }
+ 
+     public void setAchBankService(AchBankService achBankService) {
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 10301)
+@@ -0,0 +1,87 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.service.impl;
++
++import java.io.FileInputStream;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.util.Collection;
++
++import org.apache.commons.io.IOUtils;
++import org.kuali.kfs.sys.batch.BatchInputFileType;
++import org.kuali.kfs.sys.batch.service.BatchInputFileService;
++import org.kuali.kfs.sys.exception.ParseException;
++
++public class PayeeAchAccountServiceImpl extends org.kuali.kfs.pdp.service.impl.PayeeAchAccountServiceImpl implements edu.arizona.kfs.pdp.service.PayeeAchAccountService {
++    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(PayeeAchAccountServiceImpl.class);
++    
++    private BatchInputFileService batchInputFileService;
++    private BatchInputFileType achPayeeBankAcctInputFileType;
++    
++    /**
++     * After getting the file contents, this delegates to the ACH payee bank account input file type to parse
++     *  the file.
++     * 
++     * @see edu.arizona.kfs.sys.batch.service.PayeeAchAccountService#loadAchPayeeAccountFile(String)
++     */
++    public boolean loadAchPayeeAccountFile(String inputFileName) {
++        FileInputStream fileContents;
++        try {
++            fileContents = new FileInputStream(inputFileName);
++        }
++        catch (FileNotFoundException e1) {
++            LOG.error("file to parse not found " + inputFileName, e1);
++            throw new RuntimeException("Cannot find the file requested to be parsed " + inputFileName + " " + e1.getMessage(), e1);
++        }
++        
++        Collection payeeAccts = null;
++        try {
++            byte[] fileByteContent = IOUtils.toByteArray(fileContents);
++            payeeAccts = (Collection) batchInputFileService.parse(achPayeeBankAcctInputFileType, fileByteContent);
++        }
++        catch (IOException e) {
++            LOG.error("error while getting file bytes:  " + e.getMessage(), e);
++            throw new RuntimeException("Error encountered while attempting to get file bytes: " + e.getMessage(), e);
++        }
++        catch (ParseException e) {
++            LOG.error("Error encountered parsing file " + e.getMessage());
++            throw new RuntimeException("Error encountered parsing file " + e.getMessage(), e);
++        }
++
++        if (payeeAccts == null || payeeAccts.isEmpty()) {
++            LOG.warn("No banks in input file " + inputFileName);
++        }
++
++        LOG.info("Total accounts loaded: " + Integer.toString(payeeAccts.size()));
++        return true;
++    }
++
++    /**
++     * Sets the batchInputFileService attribute value.
++     * @param batchInputFileService The batchInputFileService to set.
++     */
++    public void setBatchInputFileService(BatchInputFileService batchInputFileService) {
++        this.batchInputFileService = batchInputFileService;
++    }
++
++    /**
++     * Sets the achPayeeBankAcctInputFileType attribute value.
++     * @param achPayeeBankAcctInputFileType The achPayeeBankAcctInputFileType to set.
++     */
++    public void setAchPayeeBankAcctInputFileType(BatchInputFileType achPayeeBankAcctInputFileType) {
++        this.achPayeeBankAcctInputFileType = achPayeeBankAcctInputFileType;
++    }
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 10301)
+@@ -0,0 +1,90 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.service.impl;
++
++import java.io.FileInputStream;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.util.Collection;
++import java.util.List;
++
++import org.apache.commons.io.IOUtils;
++import org.kuali.kfs.fp.batch.service.impl.ProcurementCardLoadTransactionsServiceImpl;
++import org.kuali.kfs.sys.batch.BatchInputFileType;
++import org.kuali.kfs.sys.batch.service.BatchInputFileService;
++import org.kuali.kfs.sys.exception.ParseException;
++import org.springframework.transaction.annotation.Transactional;
++
++@Transactional
++public class AchBankServiceImpl extends org.kuali.kfs.pdp.service.impl.AchBankServiceImpl implements edu.arizona.kfs.pdp.service.AchBankService {
++    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(AchBankServiceImpl.class);
++    
++    private BatchInputFileService batchInputFileService;
++    private BatchInputFileType achBankInputFileType;
++    
++    /**
++     * After getting the file contents, this delegates to the ACH bank input file type to parse the file.
++     * 
++     * @see edu.arizona.kfs.sys.batch.service.AchBankService#loadAchBankFile(String)
++     */
++    public boolean loadAchBankFile(String inputFileName) {
++        FileInputStream fileContents;
++        try {
++            fileContents = new FileInputStream(inputFileName);
++        }
++        catch (FileNotFoundException e1) {
++            LOG.error("file to parse not found " + inputFileName, e1);
++            throw new RuntimeException("Cannot find the file requested to be parsed " + inputFileName + " " + e1.getMessage(), e1);
++        }
++        
++        Collection banks = null;
++        try {
++            byte[] fileByteContent = IOUtils.toByteArray(fileContents);
++            banks = (Collection) batchInputFileService.parse(achBankInputFileType, fileByteContent);
++        }
++        catch (IOException e) {
++            LOG.error("error while getting file bytes:  " + e.getMessage(), e);
++            throw new RuntimeException("Error encountered while attempting to get file bytes: " + e.getMessage(), e);
++        }
++        catch (ParseException e) {
++            LOG.error("Error encountered parsing file " + e.getMessage());
++            throw new RuntimeException("Error encountered parsing file " + e.getMessage(), e);
++        }
++
++        if (banks == null || banks.isEmpty()) {
++            LOG.warn("No banks in input file " + inputFileName);
++        }
++
++        LOG.info("Total banks loaded: " + Integer.toString(banks.size()));
++        return true;
++    }
++    
++    /**
++     * Sets the batchInputFileService attribute value.
++     * @param batchInputFileService The batchInputFileService to set.
++     */
++    public void setBatchInputFileService(BatchInputFileService batchInputFileService) {
++        this.batchInputFileService = batchInputFileService;
++    }
++
++    /**
++     * Sets the achBankInputFileType attribute value.
++     * @param achBankInputFileType The achBankInputFileType to set.
++     */
++    public void setAchBankInputFileType(BatchInputFileType achBankInputFileType) {
++        this.achBankInputFileType = achBankInputFileType;
++    }
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java	(revision 10301)
+@@ -0,0 +1,22 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.service;
++
++public interface AchBankService extends org.kuali.kfs.pdp.service.AchBankService {
++
++    boolean loadAchBankFile(String inputFileName);
++
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java	(revision 10301)
+@@ -0,0 +1,21 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.service;
++
++public interface PayeeAchAccountService extends org.kuali.kfs.pdp.service.PayeeAchAccountService {
++    
++    boolean loadAchPayeeAccountFile(String inputFileName);
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java	(revision 10301)
+@@ -0,0 +1,185 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.batch;
++
++import java.io.BufferedWriter;
++import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.io.PrintWriter;
++import java.util.ArrayList;
++import java.util.Date;
++import java.util.List;
++
++import org.apache.commons.lang.StringUtils;
++import edu.arizona.kfs.pdp.service.PayeeAchAccountService;
++import org.kuali.kfs.sys.batch.AbstractStep;
++import org.kuali.kfs.sys.batch.BatchInputFileType;
++import org.kuali.kfs.sys.batch.service.BatchInputFileService;
++import org.kuali.rice.kns.service.DateTimeService;
++
++public class LoadAchPayeeBankAcctStep extends AbstractStep {
++    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(LoadAchBankStep.class);
++
++    private PayeeAchAccountService payeeAchAccountService;
++    private BatchInputFileService batchInputFileService;
++    private BatchInputFileType achPayeeBankAcctInputFileType;
++    private String reportPath;
++    private String reportPrefix;
++    private String reportExtension;
++    private DateTimeService dateTimeService;
++    
++    /**
++     * Controls the ACH bank file load process.
++     * 
++     * @see org.kuali.kfs.sys.batch.Step#execute(java.lang.String, java.util.Date)
++     */
++    public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
++        LOG.debug("execute() started");
++        List<String> fileNamesToLoad = batchInputFileService.listInputFileNamesWithDoneFile(achPayeeBankAcctInputFileType);
++        boolean processSuccess = true;
++        List<String> processedFiles = new ArrayList();
++        List<String> failedFiles = new ArrayList<String>();
++        
++        for (String inputFileName : fileNamesToLoad) {
++            processSuccess = payeeAchAccountService.loadAchPayeeAccountFile(inputFileName);
++
++            if (processSuccess) {
++                processedFiles.add(inputFileName);
++            }
++            else {
++                failedFiles.add(inputFileName);
++            }
++        }
++
++        if (failedFiles.size() > 0) {
++            writeErrorReport(failedFiles);
++        }
++        
++        removeDoneFiles(processedFiles);
++
++        return processSuccess;
++    }
++    
++    /**
++     * This method writes a simple error report that tells which files didn't get processed successfully.
++     * 
++     * @param lines
++     */
++    protected void writeErrorReport(List<String> fileNames) {
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        BufferedWriter writer;
++        String routingNbr;
++        String bankNm;
++        
++        try {
++            writer = new BufferedWriter(new PrintWriter(reportFile));
++
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
++            writer.write("Payee ACH Account Interface Failed Files");
++            writer.newLine();
++            writer.write("File Name");
++            writer.newLine();
++            
++            for (String fileName: fileNames) {
++                writer.write(fileName);
++                writer.newLine();
++            }
++            
++            writer.flush();
++            writer.close();
++        }
++        catch (FileNotFoundException e) {
++            LOG.error(reportFile + " not found " + " " + e.getMessage());
++            throw new RuntimeException(reportFile + " not found " + e.getMessage(), e);
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++    
++    /**
++     * Clears out associated .done files for the processed data files.
++     */
++    private void removeDoneFiles(List<String> dataFileNames) {
++        for (String dataFileName : dataFileNames) {
++            File doneFile = new File(StringUtils.substringBeforeLast(dataFileName, ".") + ".done");
++            if (doneFile.exists()) {
++                doneFile.delete();
++            }
++        }
++    }
++
++    /**
++     * Sets the payeeAchAccountService attribute value.
++     * @param payeeAchAccountService The payeeAchAccountService to set.
++     */
++    public void setPayeeAchAccountService(PayeeAchAccountService payeeAchAccountService) {
++        this.payeeAchAccountService = payeeAchAccountService;
++    }
++    
++    /**
++     * Sets the batchInputFileService attribute value.
++     * @param batchInputFileService The batchInputFileService to set.
++     */
++    public void setBatchInputFileService(BatchInputFileService batchInputFileService) {
++        this.batchInputFileService = batchInputFileService;
++    }
++
++    /**
++     * Sets the achPayeeBankAcctInputFileType attribute value.
++     * @param achPayeeBankAcctInputFileType The achPayeeBankAcctInputFileType to set.
++     */
++    public void setAchPayeeBankAcctInputFileType(BatchInputFileType achPayeeBankAcctInputFileType) {
++        this.achPayeeBankAcctInputFileType = achPayeeBankAcctInputFileType;
++    }
++
++    /**
++     * Sets the reportPath attribute value.
++     * @param reportPath The reportPath to set.
++     */
++    public void setReportPath(String reportPath) {
++        this.reportPath = reportPath;
++    }
++
++    /**
++     * Sets the reportPrefix attribute value.
++     * @param reportPrefix The reportPrefix to set.
++     */
++    public void setReportPrefix(String reportPrefix) {
++        this.reportPrefix = reportPrefix;
++    }
++
++    /**
++     * Sets the reportExtension attribute value.
++     * @param reportExtension The reportExtension to set.
++     */
++    public void setReportExtension(String reportExtension) {
++        this.reportExtension = reportExtension;
++    }
++
++    /**
++     * Sets the dateTimeService attribute value.
++     * @param dateTimeService The dateTimeService to set.
++     */
++    public void setDateTimeService(DateTimeService dateTimeService) {
++        this.dateTimeService = dateTimeService;
++    }
++
++
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java	(revision 10301)
+@@ -0,0 +1,178 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.batch;
++
++import java.io.BufferedWriter;
++import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.io.PrintWriter;
++import java.util.ArrayList;
++import java.util.Date;
++import java.util.List;
++
++import org.apache.commons.lang.StringUtils;
++import org.kuali.kfs.sys.batch.AbstractStep;
++import org.kuali.kfs.sys.batch.BatchInputFileType;
++import org.kuali.kfs.sys.batch.service.BatchInputFileService;
++import org.kuali.rice.kns.service.DateTimeService;
++
++import edu.arizona.kfs.pdp.batch.AchBankInputFileType.BankReportLine;
++import edu.arizona.kfs.pdp.service.AchBankService;
++
++public class LoadAchBankStep extends AbstractStep {
++    private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(LoadAchBankStep.class);
++
++    private AchBankService achBankService;
++    private BatchInputFileService batchInputFileService;
++    private BatchInputFileType achBankInputFileType;
++    private String reportPath;
++    private String reportPrefix;
++    private String reportExtension;
++    private DateTimeService dateTimeService;
++    
++    /**
++     * Controls the ACH bank file load process.
++     * 
++     * @see org.kuali.kfs.sys.batch.Step#execute(java.lang.String, java.util.Date)
++     */
++    public boolean execute(String jobName, Date jobRunDate) throws InterruptedException {
++        LOG.debug("execute() started");
++        List<String> fileNamesToLoad = batchInputFileService.listInputFileNamesWithDoneFile(achBankInputFileType);
++        boolean processSuccess = true;
++        List<String> processedFiles = new ArrayList();
++        
++        for (String inputFileName : fileNamesToLoad) {
++            try {
++                processSuccess = achBankService.loadAchBankFile(inputFileName);
++                
++                if (processSuccess) {
++                    processedFiles.add(inputFileName);
++                }
++            }
++            catch (Exception e) {
++                writeErrorReport(inputFileName);
++                throw new RuntimeException("Error encountered while loading bank file: " + e.getMessage(), e);
++            }
++        }
++        
++        removeDoneFiles(processedFiles);
++
++        return processSuccess;
++    }
++
++    /**
++     * This method writes a simple error report that tells which files didn't get processed successfully.
++     * 
++     * @param lines
++     */
++    protected void writeErrorReport(String fileName) {
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        BufferedWriter writer;
++        String routingNbr;
++        String bankNm;
++        
++        try {
++            writer = new BufferedWriter(new PrintWriter(reportFile));
++
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
++            writer.write("ACH Bank Interface Failed Files");
++            writer.newLine();
++            writer.write("File Name");
++            writer.newLine();
++            writer.write(fileName);                        
++            writer.flush();
++            writer.close();
++        }
++        catch (FileNotFoundException e) {
++            LOG.error(reportFile + " not found " + " " + e.getMessage());
++            throw new RuntimeException(reportFile + " not found " + e.getMessage(), e);
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++    
++    /**
++     * Clears out associated .done files for the processed data files.
++     */
++    private void removeDoneFiles(List<String> dataFileNames) {
++        for (String dataFileName : dataFileNames) {
++            File doneFile = new File(StringUtils.substringBeforeLast(dataFileName, ".") + ".done");
++            if (doneFile.exists()) {
++                doneFile.delete();
++            }
++        }
++    }
++
++    /**
++     * Sets the achBankService attribute value.
++     * @param achBankService The achBankService to set.
++     */
++    public void setAchBankService(AchBankService achBankService) {
++        this.achBankService = achBankService;
++    }
++    
++    /**
++     * Sets the batchInputFileService attribute value.
++     * @param batchInputFileService The batchInputFileService to set.
++     */
++    public void setBatchInputFileService(BatchInputFileService batchInputFileService) {
++        this.batchInputFileService = batchInputFileService;
++    }
++
++    /**
++     * Sets the achBankInputFileType attribute value.
++     * @param achBankInputFileType The achBankInputFileType to set.
++     */
++    public void setAchBankInputFileType(BatchInputFileType achBankInputFileType) {
++        this.achBankInputFileType = achBankInputFileType;
++    }
++
++    /**
++     * Sets the reportPath attribute value.
++     * @param reportPath The reportPath to set.
++     */
++    public void setReportPath(String reportPath) {
++        this.reportPath = reportPath;
++    }
++
++    /**
++     * Sets the reportPrefix attribute value.
++     * @param reportPrefix The reportPrefix to set.
++     */
++    public void setReportPrefix(String reportPrefix) {
++        this.reportPrefix = reportPrefix;
++    }
++
++    /**
++     * Sets the reportExtension attribute value.
++     * @param reportExtension The reportExtension to set.
++     */
++    public void setReportExtension(String reportExtension) {
++        this.reportExtension = reportExtension;
++    }
++
++    /**
++     * Sets the dateTimeService attribute value.
++     * @param dateTimeService The dateTimeService to set.
++     */
++    public void setDateTimeService(DateTimeService dateTimeService) {
++        this.dateTimeService = dateTimeService;
++    }
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10301)
+@@ -0,0 +1,655 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.batch;
++
++import java.io.BufferedReader;
++import java.io.BufferedWriter;
++import java.io.ByteArrayInputStream;
++import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.io.InputStreamReader;
++import java.io.PrintWriter;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import org.apache.commons.lang.StringUtils;
++import org.apache.log4j.Logger;
++import org.kuali.kfs.pdp.businessobject.ACHBank;
++import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
++import org.kuali.kfs.sys.Message;
++import org.kuali.kfs.sys.batch.BatchInputFileTypeBase;
++import org.kuali.kfs.sys.businessobject.OriginationCode;
++import org.kuali.kfs.sys.dataaccess.OriginationCodeDao;
++import org.kuali.kfs.sys.exception.ParseException;
++import org.kuali.kfs.sys.service.ReportWriterService;
++import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.service.DateTimeService;
++import org.kuali.rice.kns.util.ObjectUtils;
++
++import edu.arizona.kfs.module.ld.service.FileHandler;
++import edu.arizona.kfs.pdp.batch.AchBankInputFileType.BankReportLine;
++import edu.arizona.kfs.pdp.util.PayeeACHAcctFlatFileConverter;
++import edu.arizona.kfs.sys.AZKFSConstants;
++import edu.arizona.kfs.sys.KFSKeyConstants;
++
++public class AchPayeeBankAcctInputFileType extends BatchInputFileTypeBase {
++    private static Logger LOG = Logger.getLogger(AchPayeeBankAcctInputFileType.class);
++    
++    private BusinessObjectService businessObjectService;
++    private DateTimeService dateTimeService;
++    private OriginationCodeDao originationCodeDao;
++    private String reportPath;
++    private String reportPrefix;
++    private String reportExtension;
++
++    protected class PayeeReportLine {
++        private String payeeID;
++        private String payeeNm;
++        private String message;
++        
++        public PayeeReportLine() {
++            payeeID = "";
++            payeeNm = "";
++            message = "";
++        }
++
++        public PayeeReportLine(String payeeID, String payeeNm, String message) {
++            super();
++            this.payeeID = payeeID;
++            this.payeeNm = payeeNm;
++            this.message = message;
++        }
++
++        /**
++         * Gets the payeeID attribute. 
++         * @return Returns the payeeID.
++         */
++        public String getPayeeID() {
++            return payeeID;
++        }
++
++        /**
++         * Sets the payeeID attribute value.
++         * @param payeeID The payeeID to set.
++         */
++        public void setPayeeID(String payeeID) {
++            this.payeeID = payeeID;
++        }
++
++        /**
++         * Gets the payeeNm attribute. 
++         * @return Returns the payeeNm.
++         */
++        public String getPayeeNm() {
++            return payeeNm;
++        }
++
++        /**
++         * Sets the payeeNm attribute value.
++         * @param payeeNm The payeeNm to set.
++         */
++        public void setPayeeNm(String payeeNm) {
++            this.payeeNm = payeeNm;
++        }
++
++        /**
++         * Gets the message attribute. 
++         * @return Returns the message.
++         */
++        public String getMessage() {
++            return message;
++        }
++
++        /**
++         * Sets the message attribute value.
++         * @param message The message to set.
++         */
++        public void setMessage(String message) {
++            this.message = message;
++        }
++    }
++    
++    /**
++     * No additional information is added to ACH Payee Bank Account batch files.
++     * 
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#getFileName(org.kuali.rice.kim.bo.Person, java.lang.Object,
++     *      java.lang.String)
++     */
++    public String getFileName(String principalName, Object parsedFileContents, String userIdentifier) {
++        String fileName = "bank_" + principalName;
++        if (StringUtils.isNotBlank(userIdentifier)) {
++            fileName += "_" + userIdentifier;
++        }
++        fileName += "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate());
++
++        // remove spaces in filename
++        fileName = StringUtils.remove(fileName, " ");
++
++        return fileName;
++    }
++
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#getFileTypeIdentifer()
++     */
++    public String getFileTypeIdentifer() {
++        return AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER;
++    }
++
++
++    /**
++     * This method will process each line in the file. It follows the following business rules:
++     * 1. If the ACH bank routing number doesn't exist in PDP_ACH_BNK_T, reject record.
++     * 2. If there is no payee ID number supplied, reject record. 
++     * 3. Payee Email Address should be required as the email addresses will be used by the ACH Advice
++     *  Notification Job (pdpSendAchAdviceNotificationsJob). Reject record if no email address is supplied.
++     * 4. If the Payee ACH Account exists for the employee or student in the Payee ACH Account table
++     *  compare the remainder of the provided file account information and update the row accordingly, 
++     *  including the active indicator.
++     * 5. If the Payee ACH Account does not exist in the Payee ACH Account table for the
++     *  associated payee, insert a row with the information in XML.
++     *  
++     * It also saves new or updated records into PDP_PAYEE_ACH_ACCT_T and saves reporting information,
++     *  if applicable.
++     * 
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#parse(byte[])
++     */
++    public Object parse(byte[] fileByteContent) throws ParseException {
++        List<PayeeACHAccount> payeeAccountList = new ArrayList<PayeeACHAccount>();
++        PayeeACHAccount currentPayeeAcct;        
++        List<PayeeReportLine> reportLines = new ArrayList<PayeeReportLine>();
++        String systemSource = "";
++        BufferedReader bufferedFileReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileByteContent)));
++        String fileLine;
++        
++        try {            
++            while ((fileLine = bufferedFileReader.readLine()) != null) {
++                LOG.info("Payee line: " + fileLine);
++                
++                // get a valid systemSource from the file
++                if (systemSource == null || systemSource.equals("")) {
++                    systemSource = fileLine.substring(478, 480).trim();
++                }
++                
++                currentPayeeAcct = PayeeACHAcctFlatFileConverter.convert(fileLine);
++                processPayeeAcct(currentPayeeAcct, reportLines, payeeAccountList);                
++            }
++            
++            // write audit report
++            writeReport(reportLines, systemSource);
++        }
++        catch (IOException e) {
++            LOG.error("Error encountered reading from file content", e);
++            throw new ParseException("Error encountered reading from file content", e);
++        }
++        
++        return payeeAccountList;
++    }
++    
++    protected void processPayeeAcct(PayeeACHAccount currentPayeeAcct, List<PayeeReportLine> reportLines, List<PayeeACHAccount> payeeAccountList) {
++        PayeeReportLine reportLine = new PayeeReportLine();
++        PayeeACHAccount existingPayeeAcct;
++        Boolean validChanges = false;
++        Boolean savePayeeAcct = true;
++        
++        if (!existingRoutingNumber(currentPayeeAcct.getBankRoutingNumber())) {   // if routing number doesn't exist in our DB
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING);
++            reportLines.add(reportLine);
++        }
++        else if (currentPayeeAcct.getPayeeIdNumber() == null || currentPayeeAcct.getPayeeIdNumber().equals("")) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR);
++            reportLines.add(reportLine);
++        }
++        else if (currentPayeeAcct.getPayeeEmailAddress() == null || currentPayeeAcct.getPayeeEmailAddress().equals("")) {
++            reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
++            reportLines.add(reportLine);
++        }
++        else {
++            existingPayeeAcct = getPayeeACHAccount(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeIdentifierTypeCode());
++            if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
++                savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
++                if (savePayeeAcct) {
++                    // change message based on type
++                    if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
++                    }
++                    else if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
++                    }
++                    else {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_LOADED_SUCCESSFULLY);
++                    }
++                    
++                    reportLines.add(reportLine);
++                    payeeAccountList.add(currentPayeeAcct);
++                    businessObjectService.save(currentPayeeAcct);
++                }
++            }
++            else {    // currentPayeeAcct exists, so update existingPayeeAcct if necessary
++                // compare currentPayeeAcct to existingPayeeAcct
++                validChanges = comparePayeeAccts(currentPayeeAcct, existingPayeeAcct, reportLines);
++                
++                if (validChanges) {                            
++                    // change message based on type
++                    if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
++                    }
++                    else if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
++                    }
++                    else {
++                        reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_UPDATED_SUCCESSFULLY);
++                    }
++                   
++                    reportLines.add(reportLine);
++                    payeeAccountList.add(existingPayeeAcct);
++                    businessObjectService.save(existingPayeeAcct);                        
++                }
++            }
++        }
++    }
++
++    /**
++     * This method checks to see if the payee ACH account's routing number exists in our DB.
++     * 
++     * @param routingNumber
++     * @return false if bank with the routingNumber doesn't exist; true otherwise
++     */
++    private boolean existingRoutingNumber(String routingNumber) {
++        Map<String, String> pkMap = new HashMap<String, String>();
++        pkMap.put("bankRoutingNumber", routingNumber);
++        ACHBank bank = (ACHBank) businessObjectService.findByPrimaryKey(ACHBank.class, pkMap);
++        if (ObjectUtils.isNull(bank)) {
++            return false;
++        }
++        
++        return true;
++    }
++    
++    /**
++     * Gets the matching PayeeACHAccount record from the PayeeACHAccount table using payeeIdNbr.
++     *  
++     * @return Returns the matching PayeeACHAccount object, null if payeeIdNbr and/or payeeIdType is invalid.
++     */
++    private PayeeACHAccount getPayeeACHAccount(String payeeIdNbr, String payeeIdType) {
++                
++        Map<String, String> pkMap = new HashMap<String, String>();
++        pkMap.put("payeeIdNumber", payeeIdNbr);
++        pkMap.put("payeeIdentifierTypeCode", payeeIdType);
++        PayeeACHAccount payeeACHAccount = (PayeeACHAccount) businessObjectService.findByPrimaryKey(PayeeACHAccount.class, pkMap);
++        
++        return payeeACHAccount;
++    }
++    
++    /**
++     * This method compares the potentially new currentPayeeAcct to the existingPayeeAcct:
++     * If existingPayeeAcct has a different field value from currentPayeeAcct, update existingPayeeAcct.   
++     *  
++     * @param currentPayeeAcct
++     * @param existingPayeeAcct
++     * @return true if there were changes to existingPayeeAcct; false if not
++     */
++    protected boolean comparePayeeAccts(PayeeACHAccount currentPayeeAcct, PayeeACHAccount existingPayeeAcct,
++            List<PayeeReportLine> reportLines) {
++        boolean validAcct = true;
++        boolean changesMade = false;
++        List<String> validPayeeIDTypeCodes = new ArrayList<String>();        
++        List<String> validAcctTypeCodes = new ArrayList<String>();
++        String oldBankRoutingNumber;
++        String newBankRoutingNumber;
++        String oldBankAccountNumber;
++        String newBankAccountNumber;
++        String oldPayeeName;
++        String newPayeeName;
++        String oldPayeeEmailAddr;
++        String newPayeeEmailAddr;
++        String oldPayeeIdTypeCode;
++        String newPayeeIdTypeCode;
++        String oldAchTransactionType;
++        String newAchTransactionType;                
++        String oldBankAccountTypeCode;
++        String newBankAccountTypeCode;        
++        
++        // check for valid changes in currentPayeeAcct
++        validAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
++        
++        // set up values for variables
++        validPayeeIDTypeCodes.add("T");
++        validPayeeIDTypeCodes.add("E");
++        validAcctTypeCodes.add("22");
++        validAcctTypeCodes.add("32");
++        oldBankRoutingNumber = existingPayeeAcct.getBankRoutingNumber();
++        newBankRoutingNumber = currentPayeeAcct.getBankRoutingNumber();
++        oldBankAccountNumber = existingPayeeAcct.getBankAccountNumber();
++        newBankAccountNumber = currentPayeeAcct.getBankAccountNumber();
++        oldPayeeName = existingPayeeAcct.getPayeeName();
++        newPayeeName = currentPayeeAcct.getPayeeName();
++        oldPayeeEmailAddr = existingPayeeAcct.getPayeeEmailAddress();
++        newPayeeEmailAddr = currentPayeeAcct.getPayeeEmailAddress();
++        oldPayeeIdTypeCode = existingPayeeAcct.getPayeeIdentifierTypeCode();
++        newPayeeIdTypeCode = currentPayeeAcct.getPayeeIdentifierTypeCode();
++        oldAchTransactionType = existingPayeeAcct.getAchTransactionType();
++        newAchTransactionType = currentPayeeAcct.getAchTransactionType();                
++        oldBankAccountTypeCode = existingPayeeAcct.getBankAccountTypeCode();
++        newBankAccountTypeCode = currentPayeeAcct.getBankAccountTypeCode();        
++        
++        
++        if (validAcct) {    // update existingPayeeAcct appropriately
++            // check routing number
++            if (newBankRoutingNumber != null && !newBankRoutingNumber.equals(oldBankRoutingNumber)) {
++                existingPayeeAcct.setBankRoutingNumber(newBankRoutingNumber);
++                changesMade = true;
++            }
++
++            // check bank account number
++            if (newBankAccountNumber != null && !newBankAccountNumber.equals(oldBankAccountNumber)) {
++                existingPayeeAcct.setBankAccountNumber(newBankAccountNumber);
++                changesMade = true;
++            }
++            
++            // check payee name
++            if (newPayeeName != null && !newPayeeName.equals(oldPayeeName)) {
++                existingPayeeAcct.setPayeeName(newPayeeName);
++                changesMade = true;
++            }
++            
++            // check payee email address
++            if (newPayeeEmailAddr != null && !newPayeeEmailAddr.equals(oldPayeeEmailAddr)) {
++                existingPayeeAcct.setPayeeEmailAddress(newPayeeEmailAddr);
++                changesMade = true;
++            }
++            
++            // check payee id type code
++            if (validPayeeIDTypeCodes.contains(newPayeeIdTypeCode) && !newPayeeIdTypeCode.equals(oldPayeeIdTypeCode)) {
++                existingPayeeAcct.setPayeeIdentifierTypeCode(newPayeeIdTypeCode);
++                changesMade = true;
++            }
++            
++            // check ACH transaction type
++            if (oldAchTransactionType == null || oldAchTransactionType.equals("") || !newAchTransactionType.equals(oldAchTransactionType)) {
++                existingPayeeAcct.setAchTransactionType(newAchTransactionType);
++                changesMade = true;
++            }
++            
++            // assign new active indicator
++            existingPayeeAcct.setActive(currentPayeeAcct.isActive());
++                        
++            //  check bank acct type
++            if (validAcctTypeCodes.contains(newBankAccountTypeCode) && !newBankAccountTypeCode.equals(oldBankAccountTypeCode)) {
++                existingPayeeAcct.setBankAccountTypeCode(newBankAccountTypeCode);
++                changesMade = true;
++            }
++        }            
++        
++        return changesMade;
++    }
++
++    /**
++     * This method validates specific fields in payee ACH account. 
++     * 
++     * @param payeeAcct
++     * @return false if a validation fails that prohibits the insertion/update of the record; true otherwise.
++     */
++    protected boolean validatePayeeAcct(PayeeACHAccount payeeAcct, List<PayeeReportLine> reportLines) {
++        PayeeReportLine reportLine;
++        boolean validAcct = true;
++        List<String> validPayeeIDTypeCodes = new ArrayList<String>();
++        validPayeeIDTypeCodes.add("T");
++        validPayeeIDTypeCodes.add("E");
++        List<String> validAcctTypeCodes = new ArrayList<String>();
++        validAcctTypeCodes.add("22");
++        validAcctTypeCodes.add("32");
++        String bankRoutingNumber = payeeAcct.getBankRoutingNumber();
++        String bankAcctNumber = payeeAcct.getBankAccountNumber();
++        String payeeName = payeeAcct.getPayeeName();
++        String payeeEmailAddr = payeeAcct.getPayeeEmailAddress();
++        String payeeIdTypeCode = payeeAcct.getPayeeIdentifierTypeCode();
++        String achTransactionType = payeeAcct.getAchTransactionType();       
++        String bankAcctTypeCode = payeeAcct.getBankAccountTypeCode();        
++        
++        // check routing number
++        if (bankRoutingNumber == null || bankRoutingNumber.equals("")) {
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR);
++            reportLines.add(reportLine);
++        }
++        
++        // check bank account number
++        if (bankAcctNumber == null || bankAcctNumber.equals("")) {
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR);
++            reportLines.add(reportLine);
++        }
++        
++        // check payee name
++        if (payeeName == null || payeeName.equals("")) {
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR);
++            reportLines.add(reportLine);
++        }
++                
++        // check payee id type code
++        if (payeeIdTypeCode == null || payeeIdTypeCode.equals("") || !validPayeeIDTypeCodes.contains(payeeIdTypeCode)) {
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR);
++            reportLines.add(reportLine);
++        }
++        
++        // check ACH transaction type
++        if (achTransactionType == null || achTransactionType.equals("")) {
++            payeeAcct.setAchTransactionType("ACH");
++        }
++        
++        //  check bank acct type
++        if (bankAcctTypeCode == null || bankAcctTypeCode.equals("")) {
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR);
++            reportLines.add(reportLine);
++            validAcct = false;
++        }
++        else if (!validAcctTypeCodes.contains(bankAcctTypeCode)) {
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR);
++            reportLines.add(reportLine);            
++        }
++                
++        return validAcct;
++    }
++    
++    /**
++     * This method iterates through the lines generated during file processing and prints them to a file.
++     * Each line is 100 characters long. Payee ID is 40, payee name is 123, and the message is 45.
++     * 
++     * @param lines
++     */
++    protected void writeReport(List<PayeeReportLine> lines, String systemSource) {
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        BufferedWriter writer;
++        String payeeId;
++        String payeeNm;
++        
++        try {
++            writer = new BufferedWriter(new PrintWriter(reportFile));
++            writeReportTitle(writer, systemSource);
++            writeReportHeadings(writer);
++            for (PayeeReportLine line: lines) {
++                payeeId = rightPad(line.getPayeeID(), 20, " ");
++                payeeNm = rightPad(line.getPayeeNm(), 35, " ");
++                writer.write(payeeId + payeeNm + line.getMessage());
++                writer.newLine();
++                writer.newLine();
++            }
++            
++            writer.flush();
++            writer.close();
++        }
++        catch (FileNotFoundException e) {
++            LOG.error(reportFile + " not found " + " " + e.getMessage());
++            throw new RuntimeException(reportFile + " not found " + e.getMessage(), e);
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++
++    /**
++     * This method writes the report title.
++     * 
++     * @param systemSource
++     */
++    protected void writeReportTitle(BufferedWriter writer, String systemSource) {
++         OriginationCode originCd = originationCodeDao.findByCode(systemSource);
++         String source = originCd.getFinancialSystemDatabaseDesc();
++        
++        try {
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
++            writer.newLine();
++            writer.write("Payee ACH Account Interface");
++            writer.newLine();
++            writer.write("System Source: " + systemSource + " - " + source);
++            writer.newLine();
++            writer.newLine();
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++
++    /**
++     * This method writes the headings for the payee ACH account audit report columns.
++     * 
++     * @param writer
++     */
++    protected void writeReportHeadings(BufferedWriter writer) {
++        String payeeIdHdr = rightPad("Payee ID #", 20, " ");
++        String payeeNmHdr = rightPad("Payee Name", 35, " ");
++        
++        try {
++            writer.write(payeeIdHdr + payeeNmHdr + "Message");
++            writer.newLine();
++            writer.newLine();
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++    
++    /**
++     * This method adds white space to the valToPad string.
++     * 
++     * @param valToPad
++     * @param sizeToPadTo
++     * @param padChar
++     * @return valToPad + white space
++     */
++    protected String rightPad(String valToPad, int sizeToPadTo, String padChar) {
++        if (StringUtils.isBlank(valToPad)) {
++            return StringUtils.repeat(padChar, sizeToPadTo);
++        }
++        if (valToPad.length() >= sizeToPadTo) {
++            return valToPad;
++        }
++        return valToPad + StringUtils.repeat(padChar, sizeToPadTo - valToPad.length());
++    }
++    
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#process(java.lang.String, java.lang.Object)
++     */
++    public void process(String fileName, Object parsedFileContents) {
++        // empty method so compiler doesn't complain
++    }
++    
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#validate(java.lang.Object)
++     */
++    public boolean validate(Object parsedFileContents) {
++        return true;
++    }
++
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputType#getAuthorPrincipalName(java.io.File)
++     */
++    public String getAuthorPrincipalName(File file) {
++        String[] fileNameParts = StringUtils.split(file.getName(), "_");
++        if (fileNameParts.length >= 2) {
++            return fileNameParts[1];
++        }
++        return null;
++    }
++
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputType#getTitleKey()
++     */
++    public String getTitleKey() {
++        return KFSKeyConstants.MESSAGE_BATCH_UPLOAD_TITLE_ACH_PAYEE;
++    }
++    
++    /**
++     * Gets the businessObjectService attribute. 
++     * @return Returns the businessObjectService.
++     */
++    public BusinessObjectService getBusinessObjectService() {
++        return businessObjectService;
++    }
++
++    /**
++     * Sets the businessObjectService attribute value.
++     * @param businessObjectService The businessObjectService to set.
++     */
++    public void setBusinessObjectService(BusinessObjectService businessObjectService) {
++        this.businessObjectService = businessObjectService;
++    }
++
++    /**
++     * Sets the dateTimeService attribute value.
++     * @param dateTimeService The dateTimeService to set.
++     */
++    public void setDateTimeService(DateTimeService dateTimeService) {
++        this.dateTimeService = dateTimeService;
++    }
++    
++    /**
++     * Sets the originationCodeDao attribute value.
++     * @param originationCodeDao The originationCodeDao to set.
++     */
++    public void setOriginationCodeDao(OriginationCodeDao originationCodeDao) {
++        this.originationCodeDao = originationCodeDao;
++    }
++
++    /**
++     * Sets the reportPath attribute value.
++     * @param reportPath The reportPath to set.
++     */
++    public void setReportPath(String reportPath) {
++        this.reportPath = reportPath;
++    }
++
++    /**
++     * Sets the reportPrefix attribute value.
++     * @param reportPrefix The reportPrefix to set.
++     */
++    public void setReportPrefix(String reportPrefix) {
++        this.reportPrefix = reportPrefix;
++    }
++
++    /**
++     * Sets the reportExtension attribute value.
++     * @param reportExtension The reportExtension to set.
++     */
++    public void setReportExtension(String reportExtension) {
++        this.reportExtension = reportExtension;
++    }
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10301)
+@@ -0,0 +1,511 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.batch;
++
++import java.io.BufferedReader;
++import java.io.BufferedWriter;
++import java.io.ByteArrayInputStream;
++import java.io.File;
++import java.io.FileNotFoundException;
++import java.io.IOException;
++import java.io.InputStreamReader;
++import java.io.PrintWriter;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.List;
++import java.util.Map;
++
++import org.apache.commons.lang.StringUtils;
++import org.apache.log4j.Logger;
++import org.kuali.kfs.pdp.businessobject.ACHBank;
++import org.kuali.kfs.sys.Message;
++import org.kuali.kfs.sys.batch.BatchInputFileTypeBase;
++import org.kuali.kfs.sys.batch.service.WrappingBatchService;
++import org.kuali.kfs.sys.businessobject.OriginationCode;
++import org.kuali.kfs.sys.dataaccess.OriginationCodeDao;
++import org.kuali.kfs.sys.exception.ParseException;
++import org.kuali.kfs.sys.service.ReportWriterService;
++import org.kuali.rice.kns.service.BusinessObjectService;
++import org.kuali.rice.kns.service.DateTimeService;
++import org.kuali.rice.kns.util.ObjectUtils;
++
++import edu.arizona.kfs.sys.AZKFSConstants;
++import edu.arizona.kfs.sys.KFSKeyConstants;
++
++public class AchBankInputFileType extends BatchInputFileTypeBase {
++    private static Logger LOG = Logger.getLogger(AchBankInputFileType.class);
++    
++    private BusinessObjectService businessObjectService;
++    private DateTimeService dateTimeService;
++    private OriginationCodeDao originationCodeDao;
++    private String reportPath;
++    private String reportPrefix;
++    private String reportExtension;
++    
++    protected class BankReportLine {
++        private String bankRoutingNumber;
++        private String bankName;
++        private String message;
++        
++        public BankReportLine() {
++            bankRoutingNumber = "";
++            bankName = "";
++            message = "";
++        }
++        
++        public BankReportLine(String bankRoutingNumber, String bankName, String message) {
++            super();
++            this.bankRoutingNumber = bankRoutingNumber;
++            this.bankName = bankName;
++            this.message = message;
++        }
++
++        /**
++         * Gets the bankRoutingNumber attribute. 
++         * @return Returns the bankRoutingNumber.
++         */
++        public String getBankRoutingNumber() {
++            return bankRoutingNumber;
++        }
++
++        /**
++         * Sets the bankRoutingNumber attribute value.
++         * @param bankRoutingNumber The bankRoutingNumber to set.
++         */
++        public void setBankRoutingNumber(String bankRoutingNumber) {
++            this.bankRoutingNumber = bankRoutingNumber;
++        }
++
++        /**
++         * Gets the bankName attribute. 
++         * @return Returns the bankName.
++         */
++        public String getBankName() {
++            return bankName;
++        }
++
++        /**
++         * Sets the bankName attribute value.
++         * @param bankName The bankName to set.
++         */
++        public void setBankName(String bankName) {
++            this.bankName = bankName;
++        }
++
++        /**
++         * Gets the message attribute. 
++         * @return Returns the message.
++         */
++        public String getMessage() {
++            return message;
++        }
++
++        /**
++         * Sets the message attribute value.
++         * @param message The message to set.
++         */
++        public void setMessage(String message) {
++            this.message = message;
++        }
++    }
++
++    
++    /**
++     * No additional information is added to ACH Banking batch files.
++     * 
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#getFileName(org.kuali.rice.kim.bo.Person, java.lang.Object,
++     *      java.lang.String)
++     */
++    public String getFileName(String principalName, Object parsedFileContents, String userIdentifier) {
++        String fileName = "bank_" + principalName;
++        if (StringUtils.isNotBlank(userIdentifier)) {
++            fileName += "_" + userIdentifier;
++        }
++        fileName += "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate());
++
++        // remove spaces in filename
++        fileName = StringUtils.remove(fileName, " ");
++
++        return fileName;
++    }
++
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#getFileTypeIdentifer()
++     */
++    public String getFileTypeIdentifer() {
++        return AZKFSConstants.ACHFileConstants.ACH_BANK_FILE_TYPE_IDENTIFIER;
++    }
++
++
++    /**
++     * This method will process each line in the file. It follows the following business rules:
++     * 1. If the ACH Bank Routing Number exists, do not update the bank address or other corresponding information
++     *  (assume that existing data is accurate).
++     * 2. If the ACH Bank Routing Number does not exist, insert a row with the information in the provided file.
++     * 3. If the sender wants to inactivate the ACH Bank, do not inactivate the bank – the Cash Accountant should
++     *  be the only one to inactivate the Bank through the UI.
++     * 
++     * It also saves new records into PDP_ACH_BNK_T and saves reporting information, if applicable.
++     * 
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#parse(byte[])
++     */
++    public Object parse(byte[] fileByteContent) throws ParseException {
++        List<ACHBank> bankList = new ArrayList<ACHBank>();
++        List<BankReportLine> reportLines = new ArrayList<BankReportLine>();
++        String systemSource = "";
++        ACHBank currentBank;
++        ACHBank existingBank;
++        BankReportLine reportLine;
++        Boolean saveBank = true;
++        BufferedReader bufferedFileReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileByteContent)));
++        String fileLine;
++        
++        try {
++            while ((fileLine = bufferedFileReader.readLine()) != null) {
++                LOG.info("Bank line: " + fileLine);
++                
++                // get a valid systemSource from the file
++                if (systemSource == null || systemSource.equals("")) {
++                    systemSource = fileLine.substring(150, 152).trim();
++                }
++                
++                currentBank = new ACHBank(fileLine);
++                existingBank = getAchBank(currentBank.getBankRoutingNumber());                
++                if (ObjectUtils.isNull(existingBank)) {  // then we insert a new bank
++                    saveBank = validateBank(currentBank, reportLines);
++                    if (saveBank) {
++                        reportLine = new BankReportLine(currentBank.getBankRoutingNumber(), currentBank.getBankName(), AZKFSConstants.ACHFileConstants.ACH_BANK_LOADED_SUCCESSFULLY);
++                        reportLines.add(reportLine);
++                        businessObjectService.save(currentBank);
++                        bankList.add(currentBank);
++                    }
++                }
++            }
++            
++            // write audit report
++            writeReport(reportLines, systemSource);
++        }
++        catch (IOException e) {
++            LOG.error("Error encountered reading from file content", e);
++            throw new ParseException("Error encountered reading from file content", e);
++        }
++        
++        return bankList;
++    }
++    
++    /**
++     * Gets the matching ACHBank record from the ACHBank table.
++     *  
++     * @return Returns the matching ACHBank object, null if accountNumber is invalid.
++     */
++    private ACHBank getAchBank(String bankRoutingNumber) {
++                
++        Map<String, String> pkMap = new HashMap<String, String>();
++        pkMap.put("bankRoutingNumber", bankRoutingNumber);
++        ACHBank bank = (ACHBank) businessObjectService.findByPrimaryKey(ACHBank.class, pkMap);
++        
++        return bank;
++    }
++    
++    /**
++     * This method validates specific fields in potentially new bank record. 
++     * 
++     * Return false if a validation fails that prohibits the insertion of the record; true otherwise.
++     * 
++     * @param bank
++     * @return
++     */
++    protected Boolean validateBank(ACHBank bank, List<BankReportLine> reportLines) {
++        String bankRoutingNbr = bank.getBankRoutingNumber();
++        String bankOfficeCd = bank.getBankOfficeCode();
++        String bankTypeCd = bank.getBankTypeCode();
++        String bankNewRoutingNbr = bank.getBankNewRoutingNumber();
++        String bankNm = bank.getBankName();
++        String bankAddr = bank.getBankStreetAddress();
++        String bankCity = bank.getBankCityName();
++        String bankSt = bank.getBankStateCode();
++        String bankZipCd = bank.getBankZipCode();
++        String bankPhoneAreaCd = bank.getBankPhoneAreaCode();
++        String bankPhonePrefixNbr = bank.getBankPhonePrefixNumber();
++        String bankPhoneSuffixNbr = bank.getBankPhoneSuffixNumber();
++        String bankInstitutionStatusCd = bank.getBankInstitutionStatusCode();
++        String bankDataViewCd = bank.getBankDataViewCode();
++        List<String> validOfficeCodes = new ArrayList<String>();
++        validOfficeCodes.add("O");
++        validOfficeCodes.add("B");
++        List<String> validTypeCodes = new ArrayList<String>();
++        validTypeCodes.add("0");
++        validTypeCodes.add("1");
++        validTypeCodes.add("2");
++        
++        // check customer name, return false if not present
++        if (bankNm == null || bankNm.equals("")) {
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_MISSING_NM_ERROR));
++            return false; 
++        }
++        
++        // check address, return false if not present
++        if (bankAddr == null || bankAddr.equals("") || bankCity == null || bankCity.equals("") || bankSt == null || bankSt.equals("")
++             || bankZipCd == null || bankZipCd.equals("")) {
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR));
++            return false;            
++        }
++        
++        // check record type code
++        if (bankTypeCd == null || bankTypeCd.equals("")) {    // if no record type code
++            bank.setBankTypeCode("0");
++        }
++        else if (!validTypeCodes.contains(bankTypeCd)) {    // if an invalid code
++            bank.setBankTypeCode("0");
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_TYP_CD_ERROR));
++        }
++        else if (bankTypeCd.equals("2") && (bankNewRoutingNbr == null || bankNewRoutingNbr.equals(""))) {    // if no new routing number
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR));
++            return false;
++        }
++        
++        // check office code
++        if (bankOfficeCd == null || !validOfficeCodes.contains(bankOfficeCd)) {
++            bank.setBankOfficeCode("O");
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_OFFICE_CD_ERROR));
++        }
++                
++        // check new routing number
++        if (bankNewRoutingNbr == null || bankNewRoutingNbr.equals("")) {
++            bank.setBankNewRoutingNumber("000000000");
++        }
++                        
++        // check area code
++        if (bankPhoneAreaCd == null || bankPhoneAreaCd.equals("")) {
++            bank.setBankPhoneAreaCode("000");
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
++        }
++        
++        // check phone number prefix
++        if (bankPhonePrefixNbr == null || bankPhonePrefixNbr.equals("")) {
++            bank.setBankPhonePrefixNumber("000");
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
++        }
++        
++        // check phone number suffix
++        if (bankPhoneSuffixNbr == null || bankPhoneSuffixNbr.equals("")) {
++            bank.setBankPhoneSuffixNumber("0000");
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_PHONE_ERROR));
++        }
++        
++        // check institution status code
++        if (bankInstitutionStatusCd == null || bankInstitutionStatusCd.equals("")) {
++            bank.setBankInstitutionStatusCode("1");
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_INST_STAT_CD));
++        }
++        
++        // check data view code
++        if (bankDataViewCd == null || bankDataViewCd.equals("")) {
++            bank.setBankDataViewCode("1");
++            reportLines.add(new BankReportLine(bankRoutingNbr, bankNm, AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_DATA_VIEW_CD));
++        }
++        
++        return true;
++    }
++
++    /**
++     * This method iterates through the lines generated during file processing and prints them to a file.
++     * Each line is 100 characters long. Routing number is 9, bank name is 36, and the message is 45.
++     * 
++     * @param lines
++     */
++    protected void writeReport(List<BankReportLine> lines, String systemSource) {
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        BufferedWriter writer;
++        String routingNbr;
++        String bankNm;
++        
++        try {
++            writer = new BufferedWriter(new PrintWriter(reportFile));
++            writeReportTitle(writer, systemSource);
++            writeReportHeadings(writer);
++            for (BankReportLine line: lines) {
++                routingNbr = rightPad(line.getBankRoutingNumber(), 15, " ");
++                bankNm = rightPad(line.getBankName(), 40, " ");
++                writer.write(routingNbr + bankNm + line.getMessage());
++                writer.newLine();
++                writer.newLine();
++            }
++            
++            writer.flush();
++            writer.close();
++        }
++        catch (FileNotFoundException e) {
++            LOG.error(reportFile + " not found " + " " + e.getMessage());
++            throw new RuntimeException(reportFile + " not found " + e.getMessage(), e);
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++
++    /**
++     * This method writes the report title.
++     * 
++     * @param systemSource
++     */
++    protected void writeReportTitle(BufferedWriter writer, String systemSource) {
++         OriginationCode originCd = originationCodeDao.findByCode(systemSource);
++         String source = originCd.getFinancialSystemDatabaseDesc();
++        
++        try {
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
++            writer.newLine();
++            writer.write("ACH Bank Interface");
++            writer.newLine();
++            writer.write("System Source: " + systemSource + " - " + source);
++            writer.newLine();
++            writer.newLine();
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++
++    /**
++     * This method writes the headings for the ACH bank audit report columns.
++     * 
++     * @param writer
++     */
++    protected void writeReportHeadings(BufferedWriter writer) {
++        String bankRoutingHdr = rightPad("Bank Routing #", 15, " ");
++        String bankNmHdr = rightPad("Bank Name", 40, " ");
++        
++        try {
++            writer.write(bankRoutingHdr + bankNmHdr + "Message");
++            writer.newLine();
++            writer.newLine();
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++  
++    /**
++     * This method adds white space to the valToPad string.
++     * 
++     * @param valToPad
++     * @param sizeToPadTo
++     * @param padChar
++     * @return valToPad + white space
++     */
++    protected String rightPad(String valToPad, int sizeToPadTo, String padChar) {
++        if (StringUtils.isBlank(valToPad)) {
++            return StringUtils.repeat(padChar, sizeToPadTo);
++        }
++        if (valToPad.length() >= sizeToPadTo) {
++            return valToPad;
++        }
++        return valToPad + StringUtils.repeat(padChar, sizeToPadTo - valToPad.length());
++    }
++    
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#process(java.lang.String, java.lang.Object)
++     */
++    public void process(String fileName, Object parsedFileContents) {
++        // empty method so compiler doesn't complain
++    }
++    
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputFileType#validate(java.lang.Object)
++     */
++    public boolean validate(Object parsedFileContents) {
++        return true;
++    }
++
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputType#getAuthorPrincipalName(java.io.File)
++     */
++    public String getAuthorPrincipalName(File file) {
++        String[] fileNameParts = StringUtils.split(file.getName(), "_");
++        if (fileNameParts.length >= 2) {
++            return fileNameParts[1];
++        }
++        return null;
++    }
++
++    /**
++     * @see org.kuali.kfs.sys.batch.BatchInputType#getTitleKey()
++     */
++    public String getTitleKey() {
++        return KFSKeyConstants.MESSAGE_BATCH_UPLOAD_TITLE_ACH_BANK;
++    }
++
++    /**
++     * Sets the businessObjectService attribute value.
++     * @param businessObjectService The businessObjectService to set.
++     */
++    public void setBusinessObjectService(BusinessObjectService businessObjectService) {
++        this.businessObjectService = businessObjectService;
++    }
++
++    /**
++     * Sets the dateTimeService attribute value.
++     * @param dateTimeService The dateTimeService to set.
++     */
++    public void setDateTimeService(DateTimeService dateTimeService) {
++        this.dateTimeService = dateTimeService;
++    }
++
++    /**
++     * Sets the achReportWriterService attribute value.
++     * @param achReportWriterService The achReportWriterService to set.
++     */
++/**    public void setAchReportWriterService(ReportWriterService achReportWriterService) {
++        this.achReportWriterService = achReportWriterService;
++    } */
++
++    /**
++     * Sets the originCodeDao attribute value.
++     * @param originCodeDao The originCodeDao to set.
++     */
++    public void setOriginationCodeDao(OriginationCodeDao originationCodeDao) {
++        this.originationCodeDao = originationCodeDao;
++    }
++    
++    /**
++     * Sets the reportPath attribute value.
++     * @param reportPath The reportPath to set.
++     */
++    public void setReportPath(String reportPath) {
++        this.reportPath = reportPath;
++    }
++
++    /**
++     * Sets the reportExtension attribute value.
++     * @param reportExtension The reportExtension to set.
++     */
++    public void setReportExtension(String reportExtension) {
++        this.reportExtension = reportExtension;
++    }
++
++    /**
++     * Sets the fileReportPrefix attribute value.
++     * @param fileReportPrefix The fileReportPrefix to set.
++     */
++    public void setReportPrefix(String reportPrefix) {
++        this.reportPrefix = reportPrefix;
++    }
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10300)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 10301)
+@@ -47,6 +47,8 @@
+  		<property name="jobNames">
+ 			<list merge="true">
+ 				<value>processShippingInvoiceJob</value>
++				<value>pdpLoadBankDataJob</value>
++				<value>pdpLoadPayeeACHDataJob</value>
+ 			</list>
+ 		</property>
+ 	</bean>
+@@ -59,6 +61,22 @@
+ 			</list>
+ 		</property>
+ 	</bean>
++
++	<bean id="pdpLoadBankDataJob" parent="scheduledJobDescriptor">
++		<property name="steps">
++			<list>
++				<ref bean="loadAchBankStep" />
++			</list>
++		</property>
++	</bean>
++
++	<bean id="pdpLoadPayeeACHDataJob" parent="scheduledJobDescriptor">
++		<property name="steps">
++			<list>
++				<ref bean="loadAchPayeeBankAcctStep" />
++			</list>
++		</property>
++	</bean>
+ 	
+ 	<bean id="shippingInvoiceLoadStep" class="edu.arizona.kfs.pdp.batch.ShippingInvoiceLoadStep" parent="step">
+ 		<property name="shippingInvoiceLoadService">
+@@ -77,6 +95,54 @@
+ 			<ref bean="shippingInvoiceProcessService" />
+ 		</property>
+ 	</bean>
++
++	<bean id="loadAchBankStep" class="edu.arizona.kfs.pdp.batch.LoadAchBankStep" parent="step">
++		<property name="achBankService">
++			<ref bean="achBankService" />
++		</property>
++		<property name="batchInputFileService">
++		    <ref bean="batchInputFileService" />
++		</property>
++		<property name="achBankInputFileType">
++		    <ref bean="achBankInputFileType" />
++		</property>
++ 	    <property name="reportPath">
++	       <value>${reports.directory}/pdp</value>
++	    </property>
++	    <property name="reportPrefix">
++	       <value>pdpLoadBankDataJob-ach_bank_failed_file_report</value>
++	    </property>
++	    <property name="reportExtension">
++	       <value>txt</value>
++	    </property>
++		<property name="dateTimeService">
++			<ref bean="dateTimeService" />
++		</property>
++	</bean>
++
++	<bean id="loadAchPayeeBankAcctStep" class="edu.arizona.kfs.pdp.batch.LoadAchPayeeBankAcctStep" parent="step">
++		<property name="payeeAchAccountService">
++			<ref bean="payeeAchAccountService" />
++		</property>
++		<property name="batchInputFileService">
++		    <ref bean="batchInputFileService" />
++		</property>
++		<property name="achPayeeBankAcctInputFileType">
++		    <ref bean="achPayeeBankAcctInputFileType" />
++		</property>
++		<property name="reportPath">
++	       <value>${reports.directory}/pdp</value>
++	    </property>
++	    <property name="reportPrefix">
++	       <value>pdpLoadBankDataJob-payee_ach_failed_file_report</value>
++	    </property>
++	    <property name="reportExtension">
++	       <value>txt</value>
++	    </property>
++		<property name="dateTimeService">
++			<ref bean="dateTimeService" />
++		</property>
++	</bean>
+ 		
+ 	<bean id="shippingInvoiceLoadService" class="edu.arizona.kfs.pdp.batch.service.impl.ShippingInvoiceLoadServiceImpl">
+ 		<property name="businessObjectService">
+@@ -107,6 +173,24 @@
+ 			<ref bean="shippingInvoiceDao" />
+ 		</property>
+ 	</bean>	
++
++	<bean id="achBankService" class="edu.arizona.kfs.pdp.service.impl.AchBankServiceImpl">
++		<property name="batchInputFileService">
++			<ref bean="batchInputFileService" />
++		</property>
++		<property name="achBankInputFileType">
++			<ref bean="achBankInputFileType" />
++		</property>	
++	</bean>
++
++ 	<bean id="payeeAchAccountService" class="edu.arizona.kfs.pdp.service.impl.PayeeAchAccountServiceImpl">
++		<property name="batchInputFileService">
++			<ref bean="batchInputFileService" />
++		</property>
++		<property name="achPayeeBankAcctInputFileType">
++			<ref bean="achPayeeBankAcctInputFileType" />
++		</property>	
++	</bean>
+ 	
+ 	<bean id="shippingInputFileType" class="edu.arizona.kfs.pdp.batch.ShippingInputFileType"> 
+ 	    <property name="directoryPath">
+@@ -125,6 +209,60 @@
+ 	       <ref bean="dateTimeService"/>
+ 	    </property>
+ 	</bean>
++
++	<bean id="achBankInputFileType" class="edu.arizona.kfs.pdp.batch.AchBankInputFileType"> 
++	    <property name="directoryPath">
++	       <value>${staging.directory}/pdp/achBanks</value>
++	    </property>
++ 	    <property name="reportPath">
++	       <value>${reports.directory}/pdp</value>
++	    </property>
++	    <property name="reportPrefix">
++	       <value>pdpLoadBankDataJob-ach_bank_audit_report</value>
++	    </property>
++	    <property name="reportExtension">
++	       <value>txt</value>
++	    </property>
++	    <property name="fileExtension">
++	       <value>txt</value>
++	    </property>
++		<property name="businessObjectService">
++			<ref bean="businessObjectService" />
++		</property>
++	    <property name="dateTimeService">
++	       <ref bean="dateTimeService"/>
++	    </property>
++ 		<property name="originationCodeDao">
++			<ref bean="originationCodeDao" />
++		</property>
++	</bean>
++
++	<bean id="achPayeeBankAcctInputFileType" class="edu.arizona.kfs.pdp.batch.AchPayeeBankAcctInputFileType "> 
++	    <property name="directoryPath">
++	       <value>${staging.directory}/pdp/achPayeeBankAccounts</value>
++	    </property>
++	    <property name="reportPath">
++	       <value>${reports.directory}/pdp</value>
++	    </property>
++	    <property name="reportPrefix">
++	       <value>pdpLoadBankDataJob-payee_ach_audit_report</value>
++	    </property>
++	    <property name="reportExtension">
++	       <value>txt</value>
++	    </property>
++	    <property name="fileExtension">
++	       <value>txt</value>
++	    </property>
++		<property name="businessObjectService">
++			<ref bean="businessObjectService" />
++		</property>	    
++	    <property name="dateTimeService">
++	       <ref bean="dateTimeService"/>
++	    </property>
++ 		<property name="originationCodeDao">
++			<ref bean="originationCodeDao" />
++		</property>	     
++	</bean>
+ 	
+ 	<bean id="shippingInvoiceDao" parent="platformAwareDao" class="edu.arizona.kfs.pdp.dataaccess.impl.ShippingInvoiceDaoOjb" />		
+ </beans>
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java	(revision 0)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java	(revision 10301)
+@@ -0,0 +1,77 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.util;
++
++import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
++
++public class PayeeACHAcctFlatFileConverter {
++    
++    /** 
++     * This method assumes the Payee Account Information File Format.
++     * Routing Number  9  1-9  The institution's routing number
++     * Account Number  255  10-264  The payee’s bank account number
++     * Payee Name  123  265-387  The name of the payee
++     * Payee Email Address  43  388-430  The main or default email address of the payee
++     * Payee ID Type  1  431  The type of ID number provided or established
++     * T = Entity ID
++     * E = Employee ID
++     * V = Vendor ID
++     * ACH Transaction Type  4  432-435  Date of last change to CRF information (MMDDYY)
++     * Active Indicator  1  436  The status of the payee record
++     * Bank Account Type  2  437-438  Type of account
++     * 22 = Checking
++     * 32 = Savings
++     * Payee ID Number  40  439-478  The number used to reference the payee from the source system
++     * System Source  2  479-480 
++     * 
++     * @param fileLine
++     */
++    public static PayeeACHAccount convert(String fileLine) {
++        PayeeACHAccount payeeAcct = new PayeeACHAccount();
++        String active = "";
++        
++        payeeAcct.setBankRoutingNumber(getField(fileLine, 1, 9));
++        payeeAcct.setBankAccountNumber(getField(fileLine, 10, 255));
++        payeeAcct.setPayeeName(getField(fileLine, 265, 123));
++        payeeAcct.setPayeeEmailAddress(getField(fileLine, 388, 43));
++        payeeAcct.setPayeeIdentifierTypeCode(getField(fileLine, 431, 1));
++        payeeAcct.setAchTransactionType(getField(fileLine, 432, 4));
++        active = getField(fileLine, 436, 1);
++        if (active == null || active.equals("") || active.equals("Y")) {
++            payeeAcct.setActive(true);
++        }
++        else {
++            payeeAcct.setActive(false);
++        }
++        payeeAcct.setBankAccountTypeCode(getField(fileLine, 437, 2));
++        payeeAcct.setPayeeIdNumber(getField(fileLine, 439, 40));
++        
++        return payeeAcct;
++    }
++    
++    /**
++     * This method returns the substring of the data.
++     * 
++     * @param data
++     * @param startChar
++     * @param length
++     * @return
++     */
++    private static String getField(String data, int startChar, int length) {
++    	String field = data.substring(startChar - 1, startChar + length - 1).trim();
++    	return field;
++    }
++}
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 10300)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java	(revision 10301)
+@@ -41,4 +41,8 @@
+     
+     // Shipping Account
+     public static final String MESSAGE_BATCH_UPLOAD_TITLE_SHIP = "message.batchUpload.title.shipping";
++    
++    // ACH Banking
++    public static final String MESSAGE_BATCH_UPLOAD_TITLE_ACH_BANK = "message.batchUpload.title.achBank";
++    public static final String MESSAGE_BATCH_UPLOAD_TITLE_ACH_PAYEE = "message.batchUpload.title.achPayee";
+ }
+Index: financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+===================================================================
+--- financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10300)
++++ financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java	(revision 10301)
+@@ -51,4 +51,35 @@
+         public static final String SHIP_FILE_TYPE_IDENTIFIER = "shippingInputFileType";
+         public static final String SHIPPING_FILE_NAME = "extract_for_shipping";
+     }
++    
++    // KITT-665
++    public static final class ACHFileConstants {
++        public static final String ACH_BANK_FILE_TYPE_IDENTIFIER = "achBankInputFileType";
++        public static final String ACH_BANK_LOADED_SUCCESSFULLY = "Bank record successfully loaded";
++        public static final String ACH_BANK_INVALID_OFFICE_CD_ERROR = "Invalid office code - default value O used";
++        public static final String ACH_BANK_INVALID_TYP_CD_ERROR = "Invalid record type code - default value 0 used";
++        public static final String ACH_BANK_TYP_CD_ROUTING_NBR_ERROR = "New routing number not provided for record type code 2 - record not loaded";
++        public static final String ACH_BANK_MISSING_NM_ERROR = "Bank name not provided - record not loaded";
++        public static final String ACH_BANK_INCOMPLETE_ADDR_ERROR = "Incomplete bank address - record not loaded";
++        public static final String ACH_BANK_INCOMPLETE_PHONE_ERROR = "Incomplete phone number - default value with zeros used";
++        public static final String ACH_BANK_INVALID_INST_STAT_CD = "Invalid institution status code - default value 1 used";
++        public static final String ACH_BANK_INVALID_DATA_VIEW_CD = "Invalid data view code - default value 1 used";
++        
++        public static final String ACH_PAYEE_ACCT_FILE_TYPE_IDENTIFIER = "achPayeeBankAcctInputFileType";
++        public static final String ACH_PAYEE_ACCT_INVALID_ROUTING = "Bank routing number doesn't exist - record not loaded";
++        public static final String ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY = "Employee ACH Account record successfully loaded";
++        public static final String ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY = "Entity ACH Account record successfully loaded";
++        public static final String ACH_PAYEE_ACCT_LOADED_SUCCESSFULLY = "ACH Account record successfully loaded";
++        public static final String ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY = "Employee ACH Account recorded successfully updated";
++        public static final String ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY = "Entity ACH Account recorded successfully updated";
++        public static final String ACH_PAYEE_ACCT_UPDATED_SUCCESSFULLY = "ACH Account recorded successfully updated";
++        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR = "Payee ID number not provided - record not loaded";
++        public static final String ACH_PAYEE_ACCT_MISSING_EMAIL = "Payee email address not provided - record not loaded";
++        public static final String ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR = "Routing number not provided";
++        public static final String ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR = "Account number not provided";
++        public static final String ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR = "Payee name not provided";
++        public static final String ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR = "Invalid payee ID type";
++        public static final String ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR = "Bank account type not provided - record not loaded";
++        public static final String ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR = "Invalid bank account type code";        
++    }
+ }

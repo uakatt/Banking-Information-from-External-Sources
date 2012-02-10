@@ -1,0 +1,192 @@
+Index: financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 0)
++++ financial-system/kfs/branches/mod-hlo/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java	(revision 10127)
+@@ -0,0 +1,187 @@
++/*
++ * Copyright 2010 The Kuali Foundation.
++ * 
++ * Licensed under the Educational Community License, Version 1.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ * 
++ * http://www.opensource.org/licenses/ecl1.php
++ * 
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package edu.arizona.kfs.pdp.batch;
++
++import java.util.ArrayList;
++import java.util.List;
++
++import org.kuali.kfs.pdp.businessobject.ACHBank;
++import org.kuali.kfs.sys.ConfigureContext;
++import org.kuali.kfs.sys.context.KualiTestBase;
++
++import edu.arizona.kfs.pdp.batch.AchBankInputFileType.BankReportLine;
++import edu.arizona.kfs.sys.AZKFSConstants;
++
++@ConfigureContext
++public class AchBankInputFileTypeTest extends KualiTestBase {
++    protected ACHBank existingBank;
++    protected ACHBank newBank;
++    protected AchBankInputFileType bankInputFileType;
++    protected List<BankReportLine> reportLines;
++
++    public void setUp() throws Exception {
++        super.setUp();
++        bankInputFileType = new AchBankInputFileType();
++        reportLines = new ArrayList<BankReportLine>();
++        setUpNewBank();
++    }
++    
++    public void tearDown() throws Exception {
++        super.tearDown();
++    }
++    
++    protected void setUpExistingBank() {
++        existingBank.setBankRoutingNumber("123456789");
++        existingBank.setBankOfficeCode("O");
++        existingBank.setBankServiceNumber("1122334451");
++        existingBank.setBankTypeCode("0");
++        existingBank.setBankNewRoutingNumber("987654321");
++        existingBank.setBankName("BANK OF AMERICA");
++        existingBank.setBankStreetAddress("1234 N. Speedway Blvd.");
++        existingBank.setBankCityName("Tucson");
++        existingBank.setBankStateCode("AZ");
++        existingBank.setBankZipCode("85721");
++        existingBank.setBankPhoneAreaCode("520");
++        existingBank.setBankPhonePrefixNumber("555");
++        existingBank.setBankPhoneSuffixNumber("1111");
++        existingBank.setBankInstitutionStatusCode("1");
++        existingBank.setBankDataViewCode("1");
++        existingBank.setActive(true);
++    }
++    
++    protected void setUpNewBank() {
++        newBank = new ACHBank();
++        newBank.setBankRoutingNumber("987654321");
++        newBank.setBankOfficeCode("B");
++        newBank.setBankServiceNumber("556677889");
++        newBank.setBankTypeCode("1");
++        newBank.setBankNewRoutingNumber("123123123");
++        newBank.setBankName("WELLS FARGO");
++        newBank.setBankStreetAddress("56789 N. Speedway Blvd.");
++        newBank.setBankCityName("Tucson");
++        newBank.setBankStateCode("AZ");
++        newBank.setBankZipCode("85721");
++        newBank.setBankPhoneAreaCode("520");
++        newBank.setBankPhonePrefixNumber("797");
++        newBank.setBankPhoneSuffixNumber("1234");
++        newBank.setBankInstitutionStatusCode("1");
++        newBank.setBankDataViewCode("1");
++        newBank.setActive(true);
++    }
++    
++    public void testBankParse_MissingBankName() throws Exception {        
++        String currentName = newBank.getBankName();
++        reportLines.clear();
++        
++        // modify bank name then set it back to previous value
++        newBank.setBankName("");
++        bankInputFileType.validateBank(newBank, reportLines);
++        newBank.setBankName(currentName);
++                
++        assertEquals("Bank name not provided and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_MISSING_NM_ERROR);
++    }
++    
++    public void testBankParse_IncompleteAddress() throws Exception {
++        String currentStreet = newBank.getBankStreetAddress();
++        String currentCity = newBank.getBankCityName();
++        String currentState = newBank.getBankStateCode();
++        String currentZip = newBank.getBankZipCode();
++        
++        reportLines.clear();
++        
++        // modify bank address then set it back to previous value
++        newBank.setBankStreetAddress("");
++        bankInputFileType.validateBank(newBank, reportLines);
++        newBank.setBankStreetAddress(currentStreet);
++                
++        assertEquals("Bank address not provided and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR);
++
++        reportLines.clear();
++        
++        // modify bank city then set it back to previous value
++        newBank.setBankCityName("");
++        bankInputFileType.validateBank(newBank, reportLines);
++        newBank.setBankCityName(currentCity);
++                
++        assertEquals("Bank city not provided and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR);
++        
++        reportLines.clear();
++        
++        // modify bank state then set it back to previous value
++        newBank.setBankStateCode("");
++        bankInputFileType.validateBank(newBank, reportLines);
++        newBank.setBankStateCode(currentState);
++                
++        assertEquals("Bank state not provided and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR);
++
++        reportLines.clear();
++        
++        // modify bank zip code then set it back to previous value
++        newBank.setBankZipCode("");
++        bankInputFileType.validateBank(newBank, reportLines);
++        newBank.setBankZipCode(currentZip);
++                
++        assertEquals("Bank zip code not provided and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_INCOMPLETE_ADDR_ERROR);        
++    }
++    
++    public void testBankParse_MissingRecordTypeCode() throws Exception {        
++        String currentRecordType = newBank.getBankTypeCode();
++        boolean recordTypeCodeCorrect = false;
++        reportLines.clear();
++        
++        // modify bank record type code
++        newBank.setBankTypeCode("");
++        bankInputFileType.validateBank(newBank, reportLines);
++        
++        if (newBank.getBankTypeCode().equals("0")) {
++            recordTypeCodeCorrect = true;
++        }
++        
++        assertTrue("Bank record type not provided and it wasn't set to the default.", recordTypeCodeCorrect);
++
++        // set code back to previous value
++        newBank.setBankTypeCode(currentRecordType);
++    }
++    
++    public void testBankParse_InvalidRecordTypeCode() throws Exception {
++        String currentRecordType = newBank.getBankTypeCode();
++        boolean recordTypeCodeCorrect = false;
++        reportLines.clear();
++        
++        // modify bank record type then set it back to previous value
++        newBank.setBankTypeCode("X");
++        bankInputFileType.validateBank(newBank, reportLines);
++        newBank.setBankTypeCode(currentRecordType);
++        
++        assertEquals("Invalid bank record type provided and this error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_INVALID_TYP_CD_ERROR);
++    }
++    
++    public void testBankParse_RecordTypeCodeButNoNewRoutingNbr() throws Exception {
++        String currentRecordType = newBank.getBankTypeCode();
++        String currentNewRoutingNbr = newBank.getBankNewRoutingNumber();
++        boolean recordTypeCodeCorrect = false;
++        reportLines.clear();
++        
++        // modify bank record type and new routing number then set it back to previous values
++        newBank.setBankTypeCode("2");
++        newBank.setBankNewRoutingNumber("");
++        bankInputFileType.validateBank(newBank, reportLines);
++        newBank.setBankTypeCode(currentRecordType);
++        newBank.setBankNewRoutingNumber(currentNewRoutingNbr);
++        
++        assertEquals("Bank record type set to send ACH to new routing number, but no new routing number provided. This error wasn't caught.", reportLines.get(0).getMessage(), AZKFSConstants.ACHFileConstants.ACH_BANK_TYP_CD_ROUTING_NBR_ERROR);
++    }
++}

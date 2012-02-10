@@ -1,0 +1,21 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 11090)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/spring-pdp.xml	(revision 11091)
+@@ -259,9 +259,15 @@
+ 	    <property name="dateTimeService">
+ 	       <ref bean="dateTimeService"/>
+ 	    </property>
++		<property name="parameterService">
++			<ref bean="parameterService" />
++		</property>
++		<property name="personService">
++			<ref bean="personService" />
++		</property>
+  		<property name="originationCodeDao">
+ 			<ref bean="originationCodeDao" />
+-		</property>	     
++		</property>
+ 	</bean>
+ 	
+ 	<bean id="shippingInvoiceDao" parent="platformAwareDao" class="edu.arizona.kfs.pdp.dataaccess.impl.ShippingInvoiceDaoOjb" />		

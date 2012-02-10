@@ -1,0 +1,622 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10055)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 10056)
+@@ -16,10 +16,13 @@
+ package edu.arizona.kfs.pdp.batch;
+ 
+ import java.io.BufferedReader;
++import java.io.BufferedWriter;
+ import java.io.ByteArrayInputStream;
+ import java.io.File;
++import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
++import java.io.PrintWriter;
+ import java.util.ArrayList;
+ import java.util.HashMap;
+ import java.util.List;
+@@ -28,14 +31,20 @@
+ import org.apache.commons.lang.StringUtils;
+ import org.apache.log4j.Logger;
+ import org.kuali.kfs.pdp.businessobject.ACHBank;
++import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
+ import org.kuali.kfs.sys.Message;
+ import org.kuali.kfs.sys.batch.BatchInputFileTypeBase;
++import org.kuali.kfs.sys.businessobject.OriginationCode;
++import org.kuali.kfs.sys.dataaccess.OriginationCodeDao;
+ import org.kuali.kfs.sys.exception.ParseException;
++import org.kuali.kfs.sys.service.ReportWriterService;
+ import org.kuali.rice.kns.service.BusinessObjectService;
+ import org.kuali.rice.kns.service.DateTimeService;
+ import org.kuali.rice.kns.util.ObjectUtils;
+ 
+-import edu.arizona.kfs.pdp.businessobject.PayeeACHAccount;
++import edu.arizona.kfs.module.ld.service.FileHandler;
++import edu.arizona.kfs.pdp.batch.AchBankInputFileType.BankReportLine;
++import edu.arizona.kfs.pdp.util.PayeeACHAcctFlatFileConverter;
+ import edu.arizona.kfs.sys.AZKFSConstants;
+ import edu.arizona.kfs.sys.KFSKeyConstants;
+ 
+@@ -44,6 +53,78 @@
+     
+     private BusinessObjectService businessObjectService;
+     private DateTimeService dateTimeService;
++//    private ReportWriterService achReportWriterService;
++    private OriginationCodeDao originationCodeDao;
++    private String reportPath;
++    private String reportPrefix;
++    private String reportExtension;
++
++    protected class PayeeReportLine {
++        private String payeeID;
++        private String payeeNm;
++        private String message;
++        
++        public PayeeReportLine() {
++            payeeID = "";
++            payeeNm = "";
++            message = "";
++        }
++
++        public PayeeReportLine(String payeeID, String payeeNm, String message) {
++            super();
++            this.payeeID = payeeID;
++            this.payeeNm = payeeNm;
++            this.message = message;
++        }
++
++        /**
++         * Gets the payeeID attribute. 
++         * @return Returns the payeeID.
++         */
++        public String getPayeeID() {
++            return payeeID;
++        }
++
++        /**
++         * Sets the payeeID attribute value.
++         * @param payeeID The payeeID to set.
++         */
++        public void setPayeeID(String payeeID) {
++            this.payeeID = payeeID;
++        }
++
++        /**
++         * Gets the payeeNm attribute. 
++         * @return Returns the payeeNm.
++         */
++        public String getPayeeNm() {
++            return payeeNm;
++        }
++
++        /**
++         * Sets the payeeNm attribute value.
++         * @param payeeNm The payeeNm to set.
++         */
++        public void setPayeeNm(String payeeNm) {
++            this.payeeNm = payeeNm;
++        }
++
++        /**
++         * Gets the message attribute. 
++         * @return Returns the message.
++         */
++        public String getMessage() {
++            return message;
++        }
++
++        /**
++         * Sets the message attribute value.
++         * @param message The message to set.
++         */
++        public void setMessage(String message) {
++            this.message = message;
++        }
++    }
+     
+     /**
+      * No additional information is added to ACH Payee Bank Account batch files.
+@@ -93,103 +174,87 @@
+         List<PayeeACHAccount> payeeAccountList = new ArrayList<PayeeACHAccount>();
+         PayeeACHAccount currentPayeeAcct;
+ //      ((WrappingBatchService) achReportWriterService).initialize();
+-//      fileHandler.setUpOutputErrorFile();
+-        List<Message> auditReportMessages;
++        
++        List<PayeeReportLine> reportLines = new ArrayList<PayeeReportLine>();
+         String systemSource = "";
+         PayeeACHAccount existingPayeeAcct;
+         PayeeACHAccount reportPayeeAcct;
++        PayeeReportLine reportLine = new PayeeReportLine();
+         Boolean isNew = true;
+         Boolean validChanges = false;
+         Boolean savePayeeAcct = true;        
+         BufferedReader bufferedFileReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileByteContent)));
+         String fileLine;
+         
+-        try {
+-            // need to get system source, use do/while to get it?
+-            // or get systemSource from a fileLine when it finds it; only one system source when this method is called
+-//          achReportWriterService.writeSubTitle("System Source: " + systemSource);
+-            
++        try {            
+             while ((fileLine = bufferedFileReader.readLine()) != null) {
+                 LOG.info("Payee line: " + fileLine);
+                 
+                 // get a valid systemSource from the file
+                 if (systemSource == null || systemSource.equals("")) {
+-                    systemSource = fileLine.substring(478, 479).trim();
++                    systemSource = fileLine.substring(478, 480).trim();
+                 }
+                 
+-                auditReportMessages = new ArrayList<Message>();
+-                currentPayeeAcct = new PayeeACHAccount();
+-                currentPayeeAcct.createPayeeACHAccount(fileLine);
+-                if (!existingRoutingNumber(currentPayeeAcct.getBankRoutingNumber())) {   // make sure routing number exists in our DB
+-                    reportPayeeAcct = new PayeeACHAccount();
+-                    reportPayeeAcct.setPayeeIdNumber(currentPayeeAcct.getPayeeIdNumber());
+-                    reportPayeeAcct.setPayeeName(currentPayeeAcct.getPayeeName());
+-                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING, Message.TYPE_WARNING));
+-//                  achReportWriterService.writeError(validBank, auditReportMessages);
++                currentPayeeAcct = PayeeACHAcctFlatFileConverter.convert(fileLine);
++                if (!existingRoutingNumber(currentPayeeAcct.getBankRoutingNumber())) {   // if routing number doesn't exist in our DB
++                    reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING);
++                    reportLines.add(reportLine);
+                 }
+                 else if (currentPayeeAcct.getPayeeIdNumber() == null || currentPayeeAcct.getPayeeIdNumber().equals("")) {
+-                    reportPayeeAcct = new PayeeACHAccount();
+-                    reportPayeeAcct.setPayeeIdNumber(currentPayeeAcct.getPayeeIdNumber());
+-                    reportPayeeAcct.setPayeeName(currentPayeeAcct.getPayeeName());
+-                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR, Message.TYPE_WARNING));
+-//                  achReportWriterService.writeError(validBank, auditReportMessages);
++                    reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR);
++                    reportLines.add(reportLine);
+                 }
+                 else if (currentPayeeAcct.getPayeeEmailAddress() == null || currentPayeeAcct.getPayeeEmailAddress().equals("")) {
+-                    reportPayeeAcct = new PayeeACHAccount();
+-                    reportPayeeAcct.setPayeeIdNumber(currentPayeeAcct.getPayeeIdNumber());
+-                    reportPayeeAcct.setPayeeName(currentPayeeAcct.getPayeeName());
+-                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL, Message.TYPE_WARNING));
+-//                  achReportWriterService.writeError(validBank, auditReportMessages);                    
++                    reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_EMAIL);
++                    reportLines.add(reportLine);
+                 }
+                 else {
+                     existingPayeeAcct = getPayeeACHAccount(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeIdentifierTypeCode());
+                     if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
+-                        savePayeeAcct = validatePayeeAcct(currentPayeeAcct, auditReportMessages);
++                        savePayeeAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+                         if (savePayeeAcct) {
+-                            reportPayeeAcct = new PayeeACHAccount();
+-                            reportPayeeAcct.setPayeeIdNumber(currentPayeeAcct.getPayeeIdNumber());
+-                            reportPayeeAcct.setPayeeName(currentPayeeAcct.getPayeeName());
+                             // change message based on type
+-                            if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
+-                                auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY, Message.TYPE_WARNING));
++                            if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_LOADED_SUCCESSFULLY);
+                             }
+-                            else if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
+-                                auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY, Message.TYPE_WARNING));
++                            else if (currentPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_LOADED_SUCCESSFULLY);
+                             }
+                             else {
+-                                auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_LOADED_SUCCESSFULLY, Message.TYPE_WARNING));
++                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_LOADED_SUCCESSFULLY);
+                             }
+-//                          achReportWriterService.writeError(reportPayeeAcct, auditReportMessages);
++                            
++                            reportLines.add(reportLine);
+                             payeeAccountList.add(currentPayeeAcct);
+-                            // businessObjectService.save(currentPayeeAcct);
++                            businessObjectService.save(currentPayeeAcct);
+                         }
+                     }
+-                    else {    // currentPayeeAcct exists
++                    else {    // currentPayeeAcct exists, so update existingPayeeAcct if necessary
+                         // compare currentPayeeAcct to existingPayeeAcct
+-                        validChanges = comparePayeeAccts(currentPayeeAcct, existingPayeeAcct, auditReportMessages);
++                        validChanges = comparePayeeAccts(currentPayeeAcct, existingPayeeAcct, reportLines);
+                         
+-                        if (validChanges) {
+-                            reportPayeeAcct = new PayeeACHAccount();
+-                            reportPayeeAcct.setPayeeIdNumber(existingPayeeAcct.getPayeeIdNumber());
+-                            reportPayeeAcct.setPayeeName(existingPayeeAcct.getPayeeName());
+-                            
++                        if (validChanges) {                            
+                             // change message based on type
+                             if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
+-                                auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY, Message.TYPE_WARNING));
++                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY);
+                             }
+                             else if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
+-                                auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY, Message.TYPE_WARNING));
++                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY);
+                             }
+                             else {
+-                                auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_UPDATED_SUCCESSFULLY, Message.TYPE_WARNING));
++                                reportLine = new PayeeReportLine(currentPayeeAcct.getPayeeIdNumber(), currentPayeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_UPDATED_SUCCESSFULLY);
+                             }
+-//                          achReportWriterService.writeError(reportPayeeAcct, auditReportMessages);
++                           
++                            reportLines.add(reportLine);
+                             payeeAccountList.add(existingPayeeAcct);
+-                            // businessObjectService.save(existingPayeeAcct);                        
++                            businessObjectService.save(existingPayeeAcct);                        
+                         }
+                     }
+-                }
++                }                
+             }
++            
++            // write audit report
++            writeReport(reportLines, systemSource);
+         }
+         catch (IOException e) {
+             LOG.error("Error encountered reading from file content", e);
+@@ -219,16 +284,16 @@
+     /**
+      * Gets the matching PayeeACHAccount record from the PayeeACHAccount table using payeeIdNbr.
+      *  
+-     * @return Returns the matching PayeeACHAccount object, null if accountNumber is invalid.
++     * @return Returns the matching PayeeACHAccount object, null if payeeIdNbr and/or payeeIdType is invalid.
+      */
+     private PayeeACHAccount getPayeeACHAccount(String payeeIdNbr, String payeeIdType) {
+                 
+         Map<String, String> pkMap = new HashMap<String, String>();
+         pkMap.put("payeeIdNumber", payeeIdNbr);
+         pkMap.put("payeeIdentifierTypeCode", payeeIdType);
+-        PayeeACHAccount bank = (PayeeACHAccount) businessObjectService.findByPrimaryKey(PayeeACHAccount.class, pkMap);
++        PayeeACHAccount payeeACHAccount = (PayeeACHAccount) businessObjectService.findByPrimaryKey(PayeeACHAccount.class, pkMap);
+         
+-        return bank;
++        return payeeACHAccount;
+     }
+     
+     /**
+@@ -239,7 +304,8 @@
+      * @param existingPayeeAcct
+      * @return true if there were changes to existingPayeeAcct; false if not
+      */
+-    private boolean comparePayeeAccts(PayeeACHAccount currentPayeeAcct, PayeeACHAccount existingPayeeAcct, List<Message> reportMessages) {
++    private boolean comparePayeeAccts(PayeeACHAccount currentPayeeAcct, PayeeACHAccount existingPayeeAcct,
++            List<PayeeReportLine> reportLines) {
+         boolean validAcct = true;
+         boolean changesMade = false;
+         List<String> validPayeeIDTypeCodes = new ArrayList<String>();
+@@ -250,6 +316,8 @@
+         validAcctTypeCodes.add("32");
+         String oldBankRoutingNumber = existingPayeeAcct.getBankRoutingNumber();
+         String newBankRoutingNumber = currentPayeeAcct.getBankRoutingNumber();
++        String oldBankAccountNumber = existingPayeeAcct.getBankAccountNumber();
++        String newBankAccountNumber = currentPayeeAcct.getBankAccountNumber();
+         String oldPayeeName = existingPayeeAcct.getPayeeName();
+         String newPayeeName = currentPayeeAcct.getPayeeName();
+         String oldPayeeEmailAddr = existingPayeeAcct.getPayeeEmailAddress();
+@@ -259,11 +327,9 @@
+         String oldAchTransactionType = currentPayeeAcct.getAchTransactionType();                
+         String oldBankAccountTypeCode = existingPayeeAcct.getBankAccountTypeCode();
+         String newBankAccountTypeCode = currentPayeeAcct.getBankAccountTypeCode();        
+-        String oldPayeeIdNumber = existingPayeeAcct.getPayeeIdNumber();
+-        String newPayeeIdNumber = currentPayeeAcct.getPayeeIdNumber();
+         
+         // check for valid changes in currentPayeeAcct
+-        validAcct = validatePayeeAcct(currentPayeeAcct, reportMessages);
++        validAcct = validatePayeeAcct(currentPayeeAcct, reportLines);
+         
+         if (validAcct) {    // update existingPayeeAcct appropriately
+             // check routing number
+@@ -271,6 +337,12 @@
+                 existingPayeeAcct.setBankRoutingNumber(newBankRoutingNumber);
+                 changesMade = true;
+             }
++
++            // check bank account number
++            if (newBankAccountNumber != null && !newBankAccountNumber.equals(oldBankAccountNumber)) {
++                existingPayeeAcct.setBankAccountNumber(newBankAccountNumber);
++                changesMade = true;
++            }
+             
+             // check payee name
+             if (newPayeeName != null && !newPayeeName.equals(oldPayeeName)) {
+@@ -304,14 +376,6 @@
+                 existingPayeeAcct.setBankAccountTypeCode(newBankAccountTypeCode);
+                 changesMade = true;
+             }
+-            
+-            // check payee ID number (will not get to this code if newPayeeIdNumber is null)
+-            // needed???
+-            if (!newPayeeIdNumber.equals(oldPayeeIdNumber)) {
+-                existingPayeeAcct.setPayeeIdNumber(newPayeeIdNumber);
+-                changesMade = true;
+-            }
+-            
+         }            
+         
+         return changesMade;
+@@ -323,7 +387,8 @@
+      * @param payeeAcct
+      * @return false if a validation fails that prohibits the insertion/update of the record; true otherwise.
+      */
+-    private boolean validatePayeeAcct(PayeeACHAccount payeeAcct, List<Message> reportMessages) {
++    private boolean validatePayeeAcct(PayeeACHAccount payeeAcct, List<PayeeReportLine> reportLines) {
++        PayeeReportLine reportLine;
+         boolean validAcct = true;
+         List<String> validPayeeIDTypeCodes = new ArrayList<String>();
+         validPayeeIDTypeCodes.add("T");
+@@ -338,30 +403,29 @@
+         String payeeIdTypeCode = payeeAcct.getPayeeIdentifierTypeCode();
+         String achTransactionType = payeeAcct.getAchTransactionType();       
+         String bankAcctTypeCode = payeeAcct.getBankAccountTypeCode();        
+-        String payeeIdNumber = payeeAcct.getPayeeIdNumber();
+         
+         // check routing number
+         if (bankRoutingNumber == null || bankRoutingNumber.equals("")) {
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR, Message.TYPE_WARNING));
+-            //           achReportWriterService.writeError(payeeAcct, reportMessages);
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ROUTING_ERROR);
++            reportLines.add(reportLine);
+         }
+         
+         // check bank account number
+         if (bankAcctNumber == null || bankAcctNumber.equals("")) {
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR, Message.TYPE_WARNING));
+-            //           achReportWriterService.writeError(payeeAcct, reportMessages);
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_ACCT_NBR_ERROR);
++            reportLines.add(reportLine);
+         }
+         
+         // check payee name
+         if (payeeName == null || payeeName.equals("")) {
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR, Message.TYPE_WARNING));
+-            //           achReportWriterService.writeError(payeeAcct, reportMessages);
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_NM_ERROR);
++            reportLines.add(reportLine);
+         }
+                 
+         // check payee id type code
+         if (payeeIdTypeCode == null || payeeIdTypeCode.equals("") || !validPayeeIDTypeCodes.contains(payeeIdTypeCode)) {
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR, Message.TYPE_WARNING));
+-            //           achReportWriterService.writeError(payeeAcct, reportMessages);
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_PAYEE_ID_TYP_ERROR);
++            reportLines.add(reportLine);
+         }
+         
+         // check ACH transaction type
+@@ -371,27 +435,115 @@
+         
+         //  check bank acct type
+         if (bankAcctTypeCode == null || bankAcctTypeCode.equals("")) {
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR, Message.TYPE_WARNING));
+-            //           achReportWriterService.writeError(payeeAcct, reportMessages);
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_BANK_ACCT_TYP_ERROR);
++            reportLines.add(reportLine);
+             validAcct = false;
+         }
+         else if (!validAcctTypeCodes.contains(bankAcctTypeCode)) {
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR, Message.TYPE_WARNING));
+-            //           achReportWriterService.writeError(payeeAcct, reportMessages);
++            reportLine = new PayeeReportLine(payeeAcct.getPayeeIdNumber(), payeeAcct.getPayeeName(), AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_BANK_ACCT_TYP_ERROR);
++            reportLines.add(reportLine);            
+         }
++                
++        return validAcct;
++    }
++    
++    /**
++     * This method iterates through the lines generated during file processing and prints them to a file.
++     * Each line is 100 characters long. Payee ID is 40, payee name is 123, and the message is 45.
++     * 
++     * @param lines
++     */
++    protected void writeReport(List<PayeeReportLine> lines, String systemSource) {
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        BufferedWriter writer;
++        String payeeId;
++        String payeeNm;
+         
+-        // check payee ID number
+-        // needed???
+-        if (payeeIdNumber == null || payeeIdNumber.equals("")) {
+-            reportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_MISSING_PAYEE_ID_NBR_ERROR, Message.TYPE_WARNING));
+-            //           achReportWriterService.writeError(payeeAcct, reportMessages);
+-            validAcct = false;
++        try {
++            writer = new BufferedWriter(new PrintWriter(reportFile));
++            writeReportTitle(writer, systemSource);
++            writeReportHeadings(writer);
++            for (PayeeReportLine line: lines) {
++                payeeId = rightPad(line.getPayeeID(), 20, " ");
++                payeeNm = rightPad(line.getPayeeNm(), 35, " ");
++                writer.write(payeeId + payeeNm + line.getMessage());
++                writer.newLine();
++            }
++            
++            writer.flush();
++            writer.close();
+         }
++        catch (FileNotFoundException e) {
++            LOG.error(reportFile + " not found " + " " + e.getMessage());
++            throw new RuntimeException(reportFile + " not found " + e.getMessage(), e);
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
++
++    /**
++     * This method writes the report title.
++     * 
++     * @param systemSource
++     */
++    protected void writeReportTitle(BufferedWriter writer, String systemSource) {
++         OriginationCode originCd = originationCodeDao.findByCode(systemSource);
++         String source = originCd.getFinancialSystemDatabaseDesc();
+         
+-        return validAcct;
++        try {
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
++            writer.write("Payee ACH Account Interface");
++            writer.newLine();
++            writer.write("System Source: " + systemSource + " - " + source);
++            writer.newLine();
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
+     }
++
++    /**
++     * This method writes the headings for the payee ACH account audit report columns.
++     * 
++     * @param writer
++     */
++    protected void writeReportHeadings(BufferedWriter writer) {
++        String payeeIdHdr = rightPad("Payee ID #", 20, " ");
++        String payeeNmHdr = rightPad("Bank Name", 35, " ");
++        
++        try {
++            writer.write(payeeIdHdr + payeeNmHdr + "Message");
++            writer.newLine();
++        }
++        catch (IOException e) {
++            LOG.error("Error writing to BufferedWriter " + e.getMessage());
++            throw new RuntimeException("Error writing to BufferedWriter " + e.getMessage(), e);
++        }
++    }
+     
+     /**
++     * This method adds white space to the valToPad string.
++     * 
++     * @param valToPad
++     * @param sizeToPadTo
++     * @param padChar
++     * @return valToPad + white space
++     */
++    protected String rightPad(String valToPad, int sizeToPadTo, String padChar) {
++        if (StringUtils.isBlank(valToPad)) {
++            return StringUtils.repeat(padChar, sizeToPadTo);
++        }
++        if (valToPad.length() >= sizeToPadTo) {
++            return valToPad;
++        }
++        return valToPad + StringUtils.repeat(padChar, sizeToPadTo - valToPad.length());
++    }
++    
++    /**
+      * @see org.kuali.kfs.sys.batch.BatchInputFileType#process(java.lang.String, java.lang.Object)
+      */
+     public void process(String fileName, Object parsedFileContents) {
+@@ -438,4 +590,44 @@
+     public void setDateTimeService(DateTimeService dateTimeService) {
+         this.dateTimeService = dateTimeService;
+     }
++    
++    /**
++     * Sets the originationCodeDao attribute value.
++     * @param originationCodeDao The originationCodeDao to set.
++     */
++    public void setOriginationCodeDao(OriginationCodeDao originationCodeDao) {
++        this.originationCodeDao = originationCodeDao;
++    }
++
++    /**
++     * Sets the reportPath attribute value.
++     * @param reportPath The reportPath to set.
++     */
++    public void setReportPath(String reportPath) {
++        this.reportPath = reportPath;
++    }
++
++    /**
++     * Sets the reportPrefix attribute value.
++     * @param reportPrefix The reportPrefix to set.
++     */
++    public void setReportPrefix(String reportPrefix) {
++        this.reportPrefix = reportPrefix;
++    }
++
++    /**
++     * Sets the reportExtension attribute value.
++     * @param reportExtension The reportExtension to set.
++     */
++    public void setReportExtension(String reportExtension) {
++        this.reportExtension = reportExtension;
++    }
++
++    /**
++     * Sets the achReportWriterService attribute value.
++     * @param achReportWriterService The achReportWriterService to set.
++     */
++/*    public void setAchReportWriterService(ReportWriterService achReportWriterService) {
++        this.achReportWriterService = achReportWriterService;
++    } */  
+ }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10055)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java	(revision 10056)
+@@ -121,8 +121,6 @@
+         public void setMessage(String message) {
+             this.message = message;
+         }
+-        
+-        
+     }
+ 
+     
+@@ -194,6 +192,7 @@
+                     if (saveBank) {
+                         reportLine = new BankReportLine(currentBank.getBankRoutingNumber(), currentBank.getBankName(), AZKFSConstants.ACHFileConstants.ACH_BANK_LOADED_SUCCESSFULLY);
+                         reportLines.add(reportLine);
++                        businessObjectService.save(currentBank);
+                         bankList.add(currentBank);
+                     }
+                 }
+@@ -332,7 +331,7 @@
+      * @param lines
+      */
+     protected void writeReport(List<BankReportLine> lines, String systemSource) {
+-        File reportFile = new File(reportPath + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
++        File reportFile = new File(reportPath + "/" + reportPrefix + "_" + dateTimeService.toDateTimeStringForFilename(dateTimeService.getCurrentDate()) + "." + reportExtension);
+         BufferedWriter writer;
+         String routingNbr;
+         String bankNm;
+@@ -345,7 +344,11 @@
+                 routingNbr = rightPad(line.getBankRoutingNumber(), 15, " ");
+                 bankNm = rightPad(line.getBankName(), 40, " ");
+                 writer.write(routingNbr + bankNm + line.getMessage());
++                writer.newLine();
+             }
++            
++            writer.flush();
++            writer.close();
+         }
+         catch (FileNotFoundException e) {
+             LOG.error(reportFile + " not found " + " " + e.getMessage());
+@@ -367,8 +370,12 @@
+          String source = originCd.getFinancialSystemDatabaseDesc();
+         
+         try {
++            writer.write(dateTimeService.toDateString(dateTimeService.getCurrentDate()));
++            writer.newLine();
+             writer.write("ACH Bank Interface");
++            writer.newLine();
+             writer.write("System Source: " + systemSource + " - " + source);
++            writer.newLine();
+         }
+         catch (IOException e) {
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());
+@@ -387,6 +394,7 @@
+         
+         try {
+             writer.write(bankRoutingHdr + bankNmHdr + "Message");
++            writer.newLine();
+         }
+         catch (IOException e) {
+             LOG.error("Error writing to BufferedWriter " + e.getMessage());

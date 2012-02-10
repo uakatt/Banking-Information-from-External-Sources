@@ -1,0 +1,26 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 10080)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java	(revision 10081)
+@@ -65,8 +65,6 @@
+             LOG.warn("No banks in input file " + inputFileName);
+         }
+ 
+-//        loadTransactions((List) pcardTransactions);
+-
+         LOG.info("Total accounts loaded: " + Integer.toString(payeeAccts.size()));
+         return true;
+     }
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 10080)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 10081)
+@@ -68,8 +68,6 @@
+             LOG.warn("No banks in input file " + inputFileName);
+         }
+ 
+-//        loadTransactions((List) pcardTransactions);
+-
+         LOG.info("Total banks loaded: " + Integer.toString(banks.size()));
+         return true;
+     }

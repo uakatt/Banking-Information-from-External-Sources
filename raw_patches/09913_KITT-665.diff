@@ -1,0 +1,223 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 9912)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java	(revision 9913)
+@@ -21,21 +21,28 @@
+ import java.io.IOException;
+ import java.io.InputStreamReader;
+ import java.util.ArrayList;
++import java.util.HashMap;
+ import java.util.List;
++import java.util.Map;
+ 
+ import org.apache.commons.lang.StringUtils;
+ import org.apache.log4j.Logger;
+-import org.kuali.kfs.pdp.businessobject.PayeeACHAccount;
++import org.kuali.kfs.pdp.businessobject.ACHBank;
++import org.kuali.kfs.sys.Message;
+ import org.kuali.kfs.sys.batch.BatchInputFileTypeBase;
+ import org.kuali.kfs.sys.exception.ParseException;
++import org.kuali.rice.kns.service.BusinessObjectService;
+ import org.kuali.rice.kns.service.DateTimeService;
++import org.kuali.rice.kns.util.ObjectUtils;
+ 
++import edu.arizona.kfs.pdp.businessobject.PayeeACHAccount;
+ import edu.arizona.kfs.sys.AZKFSConstants;
+ import edu.arizona.kfs.sys.KFSKeyConstants;
+ 
+ public class AchPayeeBankAcctInputFileType extends BatchInputFileTypeBase {
+     private static Logger LOG = Logger.getLogger(AchPayeeBankAcctInputFileType.class);
+     
++    private BusinessObjectService businessObjectService;
+     private DateTimeService dateTimeService;
+     
+     /**
+@@ -67,15 +74,15 @@
+ 
+     /**
+      * This method will process each line in the file. It follows the following business rules:
+-     * 1. If the ACH Bank Account Number exists for the employee or student in the ACH Payee Bank Account Number
++     * 1. If the ACH bank routing number doesn't exist in PDP_ACH_BNK_T, reject record.
++     * 2. Payee Email Address should be required as the email addresses will be used by the ACH Advice
++     *  Notification Job (pdpSendAchAdviceNotificationsJob). Reject record if no email address is supplied.
++     * 3. If the ACH Bank Account Number exists for the employee or student in the ACH Payee Bank Account Number
+      *  Table, compare the remainder of the provided file account information and update the row accordingly, 
+      *  including the active indicator.
+-     * 2. If the ACH Bank Account Number does not exist in the ACH Payee Bank Account Number Table for the
++     * 4. If the ACH Bank Account Number does not exist in the ACH Payee Bank Account Number Table for the
+      *  associated payee, insert a row with the information in XML.
+-     * 3. Payee Email Address should be required as the email addresses will be used by the ACH Advice
+-     *  Notification Job (pdpSendAchAdviceNotificationsJob). Reject record if no email address is supplied.
+-     *  4. If the ACH bank routing number doesn't exist in PDP_ACH_BNK_T, reject record.
+-     * 
++     *  
+      * It also saves new or updated records into PDP_PAYEE_ACH_ACCT_T and saves reporting information,
+      *  if applicable.
+      * 
+@@ -83,13 +90,87 @@
+      */
+     public Object parse(byte[] fileByteContent) throws ParseException {
+         List<PayeeACHAccount> payeeAccountList = new ArrayList<PayeeACHAccount>();
+-        PayeeACHAccount currentPayeeAcct = null;
++        PayeeACHAccount currentPayeeAcct;
++//      ((WrappingBatchService) achReportWriterService).initialize();
++//      fileHandler.setUpOutputErrorFile();
++        List<Message> auditReportMessages;
++        String systemSource = "";
++        PayeeACHAccount existingPayeeAcct;
++        PayeeACHAccount reportPayeeAcct;
++        Boolean isNew = true;
++        Boolean changes = false;
++        Boolean savePayeeAcct = true;        
+         BufferedReader bufferedFileReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(fileByteContent)));
+         String fileLine;
+         
+         try {
++            // need to get system source, use do/while to get it?
++//          achReportWriterService.writeSubTitle("System Source: " + systemSource);
++            
+             while ((fileLine = bufferedFileReader.readLine()) != null) {
+-                LOG.info("Bank line: " + fileLine);
++                LOG.info("Payee line: " + fileLine);
++                
++                auditReportMessages = new ArrayList<Message>();
++                currentPayeeAcct = new PayeeACHAccount();
++                currentPayeeAcct.createPayeeACHAccount(fileLine);
++                if (!existingRoutingNumber(currentPayeeAcct.getBankRoutingNumber())) {   // make sure routing number exists in our DB
++                    reportPayeeAcct = new PayeeACHAccount();
++                    reportPayeeAcct.setPayeeIdNumber(currentPayeeAcct.getPayeeIdNumber());
++                    reportPayeeAcct.setPayeeName(currentPayeeAcct.getPayeeName());
++                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_ROUTING, Message.TYPE_WARNING));
++//                  achReportWriterService.writeError(validBank, auditReportMessages);
++                }
++                else if (currentPayeeAcct.getPayeeEmailAddress() == null || currentPayeeAcct.getPayeeEmailAddress().equals("")) {
++                    reportPayeeAcct = new PayeeACHAccount();
++                    reportPayeeAcct.setPayeeIdNumber(currentPayeeAcct.getPayeeIdNumber());
++                    reportPayeeAcct.setPayeeName(currentPayeeAcct.getPayeeName());
++                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_INVALID_EMAIL, Message.TYPE_WARNING));
++//                  achReportWriterService.writeError(validBank, auditReportMessages);                    
++                }
++                else {
++                    existingPayeeAcct = getPayeeACHAccount(currentPayeeAcct.getBankAccountNumber());
++                    if (ObjectUtils.isNull(existingPayeeAcct)) {    // then currentPayeeAcct is new
++                        savePayeeAcct = validatePayeeAcct(currentPayeeAcct, auditReportMessages);
++                        if (savePayeeAcct) {
++                            reportPayeeAcct = new PayeeACHAccount();
++                            reportPayeeAcct.setPayeeIdNumber(currentPayeeAcct.getPayeeIdNumber());
++                            reportPayeeAcct.setPayeeName(currentPayeeAcct.getPayeeName());
++                            // change message based on type and update/new
++                            auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_BANK_LOADED_SUCCESSFULLY, Message.TYPE_WARNING));
++//                          achReportWriterService.writeError(reportPayeeAcct, auditReportMessages);
++                            payeeAccountList.add(currentPayeeAcct);
++                            // businessObjectService.save(currentPayeeAcct);
++                        }
++                    }
++                    else {    // currentPayeeAcct exists
++                        // compare currentPayeeAcct to existingPayeeAcct
++                        changes = comparePayeeAccts(currentPayeeAcct, existingPayeeAcct);
++                        
++                        // validate new values in existingPayeeAcct if changed
++                        if (changes) {
++                            savePayeeAcct = validatePayeeAcct(existingPayeeAcct, auditReportMessages);
++                            if (savePayeeAcct) {
++                                reportPayeeAcct = new PayeeACHAccount();
++                                reportPayeeAcct.setPayeeIdNumber(existingPayeeAcct.getPayeeIdNumber());
++                                reportPayeeAcct.setPayeeName(existingPayeeAcct.getPayeeName());
++                                
++                                // change message based on type and update/new
++                                if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("T")) {
++                                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_ENT_UPDATED_SUCCESSFULLY, Message.TYPE_WARNING));
++                                }
++                                else if (existingPayeeAcct.getPayeeIdentifierTypeCode().equals("E")) {
++                                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_EMP_UPDATED_SUCCESSFULLY, Message.TYPE_WARNING));
++                                }
++                                else {
++                                    auditReportMessages.add(new Message(AZKFSConstants.ACHFileConstants.ACH_PAYEE_ACCT_VND_UPDATED_SUCCESSFULLY, Message.TYPE_WARNING));
++                                }
++//                              achReportWriterService.writeError(reportPayeeAcct, auditReportMessages);
++                                payeeAccountList.add(existingPayeeAcct);
++                             // businessObjectService.save(existingPayeeAcct);
++                            }
++                        }
++                    }
++                }
+             }
+         }
+         catch (IOException e) {
+@@ -101,6 +182,61 @@
+     }
+ 
+     /**
++     * This method checks to see if the payee ACH account's routing number exists in our DB.
++     * 
++     * @param routingNumber
++     * @return false if bank with the routingNumber doesn't exist; true otherwise
++     */
++    private boolean existingRoutingNumber(String routingNumber) {
++        Map<String, String> pkMap = new HashMap<String, String>();
++        pkMap.put("bankRoutingNumber", routingNumber);
++        ACHBank bank = (ACHBank) businessObjectService.findByPrimaryKey(ACHBank.class, pkMap);
++        if (ObjectUtils.isNull(bank)) {
++            return false;
++        }
++        
++        return true;
++    }
++    
++    /**
++     * Gets the matching PayeeACHAccount record from the PayeeACHAccount table.
++     *  
++     * @return Returns the matching PayeeACHAccount object, null if accountNumber is invalid.
++     */
++    private PayeeACHAccount getPayeeACHAccount(String accountNumber) {
++                
++        Map<String, String> pkMap = new HashMap<String, String>();
++        pkMap.put("bankRoutingNumber", accountNumber);
++        PayeeACHAccount bank = (PayeeACHAccount) businessObjectService.findByPrimaryKey(PayeeACHAccount.class, pkMap);
++        
++        return bank;
++    }
++    
++    /**
++     * This method compares the potentially new currentPayeeAcct to the existingPayeeAcct:
++     * If existingPayeeAcct has a different field value from currentPayeeAcct, update existingPayeeAcct.   
++     *  
++     * @param currentPayeeAcct
++     * @param existingPayeeAcct
++     * @return true if there were changes to existingPayeeAcct; false if not
++     */
++    private boolean comparePayeeAccts(PayeeACHAccount currentPayeeAcct, PayeeACHAccount existingPayeeAcct) {
++        
++        return true;
++    }
++
++    /**
++     * This method validates specific fields in payee ACH account. 
++     * 
++     * @param bank
++     * @return false if a validation fails that prohibits the insertion of the record; true otherwise.
++     */
++    private boolean validatePayeeAcct(PayeeACHAccount payeeAcct, List<Message> reportMessages) {
++        
++        return true;
++    }
++    
++    /**
+      * @see org.kuali.kfs.sys.batch.BatchInputFileType#process(java.lang.String, java.lang.Object)
+      */
+     public void process(String fileName, Object parsedFileContents) {
+@@ -133,6 +269,14 @@
+     }
+ 
+     /**
++     * Sets the businessObjectService attribute value.
++     * @param businessObjectService The businessObjectService to set.
++     */
++    public void setBusinessObjectService(BusinessObjectService businessObjectService) {
++        this.businessObjectService = businessObjectService;
++    }
++
++    /**
+      * Sets the dateTimeService attribute value.
+      * @param dateTimeService The dateTimeService to set.
+      */

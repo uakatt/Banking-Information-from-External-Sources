@@ -1,0 +1,14 @@
+Index: financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java
+===================================================================
+--- financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 9996)
++++ financial-system/kfs/branches/mod-hlo/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java	(revision 9997)
+@@ -26,7 +26,9 @@
+ import org.kuali.kfs.sys.batch.BatchInputFileType;
+ import org.kuali.kfs.sys.batch.service.BatchInputFileService;
+ import org.kuali.kfs.sys.exception.ParseException;
++import org.springframework.transaction.annotation.Transactional;
+ 
++@Transactional
+ public class AchBankServiceImpl extends org.kuali.kfs.pdp.service.impl.AchBankServiceImpl implements edu.arizona.kfs.pdp.service.AchBankService {
+     private static org.apache.log4j.Logger LOG = org.apache.log4j.Logger.getLogger(AchBankServiceImpl.class);
+     
