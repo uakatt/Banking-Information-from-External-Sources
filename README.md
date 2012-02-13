@@ -90,4 +90,27 @@ file for every revision listed below for the following reasons:
 
 This is a list of files that were created, changed, or deleted in this modification.
 
-* /financial-system/kfs/trunk/build/external/work/staging/pdp/achBanks* /financial-system/kfs/trunk/build/external/work/staging/pdp/achBanks/placeholder.txt* /financial-system/kfs/trunk/build/external/work/staging/pdp/achPayeeBankAccounts* /financial-system/kfs/trunk/build/external/work/staging/pdp/achPayeeBankAccounts/placeholder.txt* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/AchBankService.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util* /financial-system/kfs/trunk/work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/KFSKeyConstants.java* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/util* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/sys/AZKFSConstants.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/spring-pdp.xml* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java* /financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java* /financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+* /build/external/work/staging/pdp/achBanks was **added**.
+* /build/external/work/staging/pdp/achBanks/placeholder.txt was **added**.
+* /build/external/work/staging/pdp/achPayeeBankAccounts was **added**.
+* /build/external/work/staging/pdp/achPayeeBankAccounts/placeholder.txt was **added**.
+* /work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java was **added**.
+* /work/src/edu/arizona/kfs/sys/AZKFSConstants.java was **modified**.
+* /work/src/edu/arizona/kfs/pdp/service/AchBankService.java was **added**.
+* /work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java was **added**.
+* /work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java was **added**.
+* /work/src/edu/arizona/kfs/pdp/service/impl/AchBankServiceImpl.java was **added**.
+* /work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java was **added**.
+* /work/src/edu/arizona/kfs/pdp/util was **added**.
+* /work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java was **modified**.
+* /work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java was **added**.
+* /work/src/edu/arizona/kfs/pdp/spring-pdp.xml was **modified**.
+* /work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java was **added**.
+* /work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java was **added**.
+* /work/src/edu/arizona/kfs/sys/KFSKeyConstants.java was **modified**.
+* /test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java was **added**.
+* /test/unit/src/edu/arizona/kfs/pdp/batch/AchBankInputFileTypeTest.java was **added**.
+* /test/unit/src/edu/arizona/kfs/pdp/util was **added**.
+* /test/unit/src/edu/arizona/kfs/pdp/batch was **added**.
+* /test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java was **added**.
+
