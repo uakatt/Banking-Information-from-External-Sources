@@ -61,30 +61,30 @@ file for every revision listed below for the following reasons:
 
 [Here](Banking-Information-from-External-Sources/blob/master/patch_log.txt) is a printout of `svn log -v` for each revision.
 
-* \#10299 was committed against KITT-665 on 2010-06-03 21:49:17 UTC by <strong>hlo</strong>.
-  > KITT-665 Merging with branch.
+*   \#10299 was committed against KITT-665 on 2010-06-03 21:49:17 UTC by <strong>hlo</strong>.
 
-* \#10301 was committed against KITT-665 on 2010-06-03 21:55:14 UTC by <strong>hlo</strong>.
-  > KITT-665 Merging branch changes.
+    > KITT-665 Merging with branch.
+*   \#10301 was committed against KITT-665 on 2010-06-03 21:55:14 UTC by <strong>hlo</strong>.
 
-* \#10302 was committed against KITT-665 on 2010-06-03 21:58:12 UTC by <strong>hlo</strong>.
-  > KITT-665 Merging branch changes.
+    > KITT-665 Merging branch changes.
+*   \#10302 was committed against KITT-665 on 2010-06-03 21:58:12 UTC by <strong>hlo</strong>.
 
-* \#10442 was committed against KITT-665 on 2010-06-11 16:14:52 UTC by <strong>hlo</strong>.
-  > KITT-665 Merging code after code review.
+    > KITT-665 Merging branch changes.
+*   \#10442 was committed against KITT-665 on 2010-06-11 16:14:52 UTC by <strong>hlo</strong>.
 
-* \#11130 was committed against KITT-1202 on 2010-07-14 18:20:35 UTC by <strong>hlo</strong>.
-  > KITT-1202 Merging code changes.
+    > KITT-665 Merging code after code review.
+*   \#11130 was committed against KITT-1202 on 2010-07-14 18:20:35 UTC by <strong>hlo</strong>.
 
-* \#12268 was committed against KITT-1202 on 2010-08-21 00:32:09 UTC by <strong>hlo</strong>.
-  > KITT-1202 Changes after functional testing.
+    > KITT-1202 Merging code changes.
+*   \#12268 was committed against KITT-1202 on 2010-08-21 00:32:09 UTC by <strong>hlo</strong>.
 
-* \#12269 was committed against KITT-1202 on 2010-08-21 00:35:19 UTC by <strong>hlo</strong>.
-  > KITT-1202 Cleaning up code.
+    > KITT-1202 Changes after functional testing.
+*   \#12269 was committed against KITT-1202 on 2010-08-21 00:35:19 UTC by <strong>hlo</strong>.
 
-* \#12399 was committed against KITT-1202 on 2010-08-25 17:35:39 UTC by <strong>hlo</strong>.
-  > KITT-1202 Changing equals to equalsIgnoreCase.
+    > KITT-1202 Cleaning up code.
+*   \#12399 was committed against KITT-1202 on 2010-08-25 17:35:39 UTC by <strong>hlo</strong>.
 
+    > KITT-1202 Changing equals to equalsIgnoreCase.
 
 <h2><a name="files">Files</a></h2>
 
@@ -113,4 +113,51 @@ This is a list of files that were created, changed, or deleted in this modificat
 * /test/unit/src/edu/arizona/kfs/pdp/util was **added**.
 * /test/unit/src/edu/arizona/kfs/pdp/batch was **added**.
 * /test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java was **added**.
+
+<h2><a href="post_mod_changes">Post Mod Changes</a></h2>
+
+For each file that was changed or added for this modification, I've looked at its history in subversion (`svn log <file_name>`) to find whether later fixes were committed against this modification that I might have missed. There were some :) Here they are:
+
+*   **#16219** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java"].
+
+    > KFSI-3162
+    > KITT-2221
+    > Moving .done file removal code. Also threw in some BufferedWriter cleanup.
+*   **#17253** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+
+    > KFSI-3481
+    > KITT-2336
+    > Added better error handling in case the OriginCode sent with the file was invalid.
+*   **#17358** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java"].
+
+    > KFSI-3505
+    > KITT-2348
+    > Fixed an NPE on the OriginCode when a bad one used in the ACH Payee Bank Data Load.
+*   **#18503** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java", "/financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java"].
+
+    > KFSI-3837 KITT-2506 keep retrieved Person objects around longer to reduce the number of queries needed during job execution
+*   **#20172** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+
+    > Adjusting logging properties, and some code, to decrease logging verbosity.
+    > 
+    > KITT-2617
+*   **#20419** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+
+    > Revert "Adjusting logging properties, and some code, to decrease logging verbosity."
+    > 
+    > Reverting a number of recent changes to restore logging verbosity, until I can figure out what went wrong.
+    > 
+    > KITT-2617
+    > KITT-2663
+    > 
+    > This reverts commit c230f2b7e48bf203858a7274d8e21af8c420d0a8.
+*   **#21462** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+
+    > KFSI-5210
+    > KITT-2890
+    > Removed multi-byte (but not UTF-8) characters from comments that were breaking a strict compile.
+*   **#23903** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java"].
+
+    > KFSI-6193
+    > The system has now been updated to remove all entries of the type in the file (excepting override IDs), before loading the new file.
 
