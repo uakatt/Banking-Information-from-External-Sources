@@ -8,6 +8,7 @@ This "patch package" is designed to be informative to technical developers in th
 * <a href="#liquibase_changesets">List of Liquibase Changesets</a> - This list contains any liquibase changeset files that were associated with this modification.
 * <a href="#patch_files">List of Patch Files</a> - This is a list of each patch file that needs to be applied to the KFS source code in order to realize the modification. This list does _not_ include patch files for revisions that didn't touch the `trunk/` at the UA. Before a modification was merged with `trunk/`, it may have been tweaked, reworked, refactored, code reviewed, etc, in handfuls of revisions in a feature branch.
 * <a href="#revisions">List of Revisions</a> - This list contains every revision associated with this modification. Many of which, as you will see, only touch files in a feature branch. The revisions that actually made it into the actual modification touch files in `trunk/`. The list of patch files is a better reference of which are these revisions.
+* <a href="#post_mod_changes">List of Post-Modification Changes</a> - This list contains revision numbers that are _not_ included in the patches, or raw patches, but that touched one or more key files involved in this modification.
 
 <h2><a name="jiras">Jiras</a></h2>
 
@@ -114,34 +115,38 @@ This is a list of files that were created, changed, or deleted in this modificat
 * /test/unit/src/edu/arizona/kfs/pdp/batch was **added**.
 * /test/unit/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverterTest.java was **added**.
 
-<h2><a href="post_mod_changes">Post Mod Changes</a></h2>
+<h2><a name="post_mod_changes">Post Mod Changes</a></h2>
 
-For each file that was changed or added for this modification, I've looked at its history in subversion (`svn log <file_name>`) to find whether later fixes were committed against this modification that I might have missed. There were some :) Here they are:
+For each file that was changed or added for this modification, I've looked at its history in subversion (`svn log <file_name>`) to find whether later fixes were committed against this modification that I might have missed. There were some :) They may be fixes to the modification, or further enhancements, or changes completely unrelated. Please contact the UA for more information about a given revision number, or Jira ticket. Here they are:
 
-*   **#16219** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java"].
+*   **#16219** touches: 
+    * /work/src/edu/arizona/kfs/pdp/batch/LoadAchPayeeBankAcctStep.java
+    * /work/src/edu/arizona/kfs/pdp/batch/LoadAchBankStep.java
 
     > KFSI-3162
     > KITT-2221
     > Moving .done file removal code. Also threw in some BufferedWriter cleanup.
-*   **#17253** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+*   **#17253** touches /work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java.
 
     > KFSI-3481
     > KITT-2336
     > Added better error handling in case the OriginCode sent with the file was invalid.
-*   **#17358** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java"].
+*   **#17358** touches /work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java.
 
     > KFSI-3505
     > KITT-2348
     > Fixed an NPE on the OriginCode when a bad one used in the ACH Payee Bank Data Load.
-*   **#18503** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java", "/financial-system/kfs/trunk/test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java"].
+*   **#18503** touches: 
+    * /work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+    * /test/unit/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileTypeTest.java
 
     > KFSI-3837 KITT-2506 keep retrieved Person objects around longer to reduce the number of queries needed during job execution
-*   **#20172** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+*   **#20172** touches /work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java.
 
     > Adjusting logging properties, and some code, to decrease logging verbosity.
     > 
     > KITT-2617
-*   **#20419** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+*   **#20419** touches /work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java.
 
     > Revert "Adjusting logging properties, and some code, to decrease logging verbosity."
     > 
@@ -151,12 +156,17 @@ For each file that was changed or added for this modification, I've looked at it
     > KITT-2663
     > 
     > This reverts commit c230f2b7e48bf203858a7274d8e21af8c420d0a8.
-*   **#21462** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java"].
+*   **#21462** touches: 
+    * /work/src/edu/arizona/kfs/pdp/util/PayeeACHAcctFlatFileConverter.java
+    * /work/src/edu/arizona/kfs/pdp/batch/AchBankInputFileType.java
 
     > KFSI-5210
     > KITT-2890
     > Removed multi-byte (but not UTF-8) characters from comments that were breaking a strict compile.
-*   **#23903** touches ["/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java", "/financial-system/kfs/trunk/work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java"].
+*   **#23903** touches: 
+    * /work/src/edu/arizona/kfs/pdp/batch/AchPayeeBankAcctInputFileType.java
+    * /work/src/edu/arizona/kfs/pdp/service/PayeeAchAccountService.java
+    * /work/src/edu/arizona/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
 
     > KFSI-6193
     > The system has now been updated to remove all entries of the type in the file (excepting override IDs), before loading the new file.
