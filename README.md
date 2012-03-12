@@ -132,6 +132,16 @@ Files **modified** for this modification (4 files)
     /work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
     /work/src/org/kuali/kfs/pdp/batch/LoadFederalReserveBankDataStep.java
 
+<h2><a name="extra_files">Extra Files</a></h2>
+
+Extra files for this modification that have been included for some reason or another. Most likely, these files did not exist in Foundation KFS 3.0, but are referenced in this enhancement. (5 files)
+
+    work/src/edu/arizona/kfs/pdp/spring-pdp.xml
+    work/src/edu/arizona/kfs/sys/AZKFSConstants.java
+    work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
+    work/src/org/kuali/kfs/pdp/service/PayeeAchAccountService.java
+    work/src/org/kuali/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+
 <h2><a name="post_mod_changes">Post Mod Changes</a></h2>
 
 For each file that was changed or added for this modification, I've looked at its history in subversion (`svn log <file_name>`) to find whether later fixes were committed against this modification that I might have missed. There were some :) They may be fixes to the modification, or further enhancements, or changes completely unrelated. Please contact the UA for more information about a given revision number, or Jira ticket. Here they are:
