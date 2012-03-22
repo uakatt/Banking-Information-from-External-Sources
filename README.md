@@ -20,6 +20,11 @@ this README contains several informative sections:
   this modification. Many of which, as you will see, only touch files in a feature branch. The
   revisions that actually made it into the actual modification touch files in `trunk/`. The list
   of patch files is a better reference of which are these revisions.
+* <a href="#files">Lists of Files</a> - These lists contain every file that was created,
+  modified, or deleted for this enhancement.
+* <a href="#extra_files">List of Extra Files</a> - This list contains any extra files that were not
+  explicitly changed during the enhancement. The enhancement may rely on these files, and they may
+  not be a part of the original release.
 * <a href="#post_mod_changes">List of Post-Modification Changes</a> - This list contains
   revision numbers that are _not_ included in the patches, or raw patches, but that touched one
   or more key files involved in this modification.
@@ -134,13 +139,16 @@ Files **modified** for this modification (4 files)
 
 <h2><a name="extra_files">Extra Files</a></h2>
 
-Extra files for this modification that have been included for some reason or another. Most likely, these files did not exist in Foundation KFS 3.0, but are referenced in this enhancement. (5 files)
+Extra files for this modification that have been included for some reason or another. Most likely, these files did not exist in Foundation KFS 3.0, but are referenced in this enhancement. (8 files)
 
     work/src/edu/arizona/kfs/pdp/spring-pdp.xml
     work/src/edu/arizona/kfs/sys/AZKFSConstants.java
     work/src/edu/arizona/kfs/sys/KFSKeyConstants.java
+    work/src/org/kuali/kfs/pdp/dataaccess/PayeeAchAccountDao.java
+    work/src/org/kuali/kfs/pdp/dataaccess/impl/PayeeAchAccountDaoOjb.java
     work/src/org/kuali/kfs/pdp/service/PayeeAchAccountService.java
     work/src/org/kuali/kfs/pdp/service/impl/PayeeAchAccountServiceImpl.java
+    work/src/org/kuali/kfs/pdp/spring-pdp.xml
 
 <h2><a name="post_mod_changes">Post Mod Changes</a></h2>
 
